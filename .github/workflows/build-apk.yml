@@ -1,0 +1,1944 @@
+name: Build Android APK - Darbat Mouallim
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        continue-on-error: true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Generate Android Project Structure
+        run: |
+          mkdir -p app/src/main/java/com/zaytouna/darbatmouallim
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/assets
+
+          # 1. settings.gradle
+          cat << 'EOF' > settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "DarbatMouallim"
+          include ':app'
+          EOF
+
+          # 2. Root build.gradle
+          cat << 'EOF' > build.gradle
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+          }
+          EOF
+
+          # 3. gradle.properties
+          cat << 'EOF' > gradle.properties
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          EOF
+
+          # 4. app/build.gradle
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.zaytouna.darbatmouallim'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "com.zaytouna.darbatmouallim"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0.0"
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+                  debug {
+                      minifyEnabled false
+                      debuggable true
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          # 5. AndroidManifest.xml
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:supportsRtl="true"
+                  android:hardwareAccelerated="true"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+                  
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:screenOrientation="portrait">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 6. strings.xml
+          cat << 'EOF' > app/src/main/res/values/strings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">ضربة معلم</string>
+          </resources>
+          EOF
+
+          # 7. Launcher Icon
+          cat << 'EOF' > app/src/main/res/mipmap-hdpi/ic_launcher.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path
+                  android:fillColor="#FF6F00"
+                  android:pathData="M0,0h108v108h-108z"/>
+              <path
+                  android:fillColor="#D50000"
+                  android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0"/>
+              <path
+                  android:fillColor="#FFFFFF"
+                  android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0"/>
+              <path
+                  android:fillColor="#D50000"
+                  android:pathData="M54,54m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0"/>
+              <path
+                  android:fillColor="#FFD600"
+                  android:pathData="M54,54m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"/>
+          </vector>
+          EOF
+
+          # 8. MainActivity.java
+          cat << 'EOF' > app/src/main/java/com/zaytouna/darbatmouallim/MainActivity.java
+          package com.zaytouna.darbatmouallim;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.view.View;
+          import android.view.Window;
+          import android.view.WindowManager;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  requestWindowFeature(Window.FEATURE_NO_TITLE);
+                  getWindow().setFlags(
+                      WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                      WindowManager.LayoutParams.FLAG_FULLSCREEN
+                  );
+
+                  webView = new WebView(this);
+                  WebSettings webSettings = webView.getSettings();
+                  webSettings.setJavaScriptEnabled(true);
+                  webSettings.setDomStorageEnabled(true);
+                  webSettings.setAllowFileAccess(true);
+                  webSettings.setAllowContentAccess(true);
+                  webSettings.setMediaPlaybackRequiresUserGesture(false);
+                  webSettings.setDatabaseEnabled(true);
+                  webSettings.setUseWideViewPort(true);
+                  webSettings.setLoadWithOverviewMode(true);
+                  webSettings.setSupportZoom(false);
+
+                  webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+
+                  webView.loadUrl("file:///android_asset/index.html");
+
+                  setContentView(webView);
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          EOF
+
+      - name: Generate HTML5 Game Assets
+        run: |
+          cat << 'HTMLEOF' > app/src/main/assets/index.html
+          <!DOCTYPE html>
+          <html lang="ar" dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+            <title>ضربة معلم - لعبة الألغاز والتصويب</title>
+            <style>
+              :root {
+                --primary-orange: #FF6F00;
+                --sunset-top: #FF5722;
+                --sunset-mid: #FF8F00;
+                --sunset-bot: #FFA000;
+                --gold-light: #FFF176;
+                --gold-main: #FFC107;
+                --gold-dark: #FF8F00;
+                --sky-blue: #00B0FF;
+                --blue-dark: #0277BD;
+                --lime-green: #76FF03;
+                --green-dark: #2E7D32;
+                --crimson-red: #FF1744;
+                --text-dark: #37474F;
+                --text-light: #FFFFFF;
+              }
+
+              * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-tap-highlight-color: transparent;
+              }
+
+              body {
+                font-family: 'Segoe UI', 'Cairo', 'Tajawal', Tahoma, sans-serif;
+                background: linear-gradient(175deg, var(--sunset-top) 0%, var(--sunset-mid) 40%, var(--sunset-bot) 75%, #FFB300 100%);
+                color: var(--text-dark);
+                min-height: 100vh;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+
+              #app-container {
+                width: 100vw;
+                height: 100vh;
+                max-width: 480px;
+                max-height: 920px;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                background: radial-gradient(circle at 50% 15%, rgba(255,255,255,0.22) 0%, transparent 60%),
+                            linear-gradient(180deg, #FF6F00 0%, #FF8F00 45%, #FFA000 85%, #FFB300 100%);
+                box-shadow: 0 0 40px rgba(0,0,0,0.5);
+              }
+
+              #confetti-canvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 999;
+              }
+
+              .screen {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: none;
+                flex-direction: column;
+                z-index: 10;
+              }
+              .screen.active {
+                display: flex;
+              }
+
+              .glossy-btn {
+                position: relative;
+                border: 3px solid rgba(255,255,255,0.8);
+                border-radius: 24px;
+                font-weight: 800;
+                cursor: pointer;
+                text-align: center;
+                text-shadow: 0 2px 3px rgba(0,0,0,0.35);
+                color: var(--text-light);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.08s ease, box-shadow 0.08s ease;
+              }
+              .glossy-btn:active {
+                transform: translateY(4px) !important;
+                box-shadow: 0 2px 0 rgba(0,0,0,0.3) !important;
+              }
+              .glossy-btn::before {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 10%;
+                right: 10%;
+                height: 40%;
+                background: linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.05) 100%);
+                border-radius: 16px 16px 100px 100px;
+                pointer-events: none;
+              }
+
+              .btn-green {
+                background: linear-gradient(180deg, #76FF03 0%, #43A047 100%);
+                box-shadow: 0 6px 0 #1B5E20, 0 10px 20px rgba(0,0,0,0.35);
+              }
+              .btn-orange {
+                background: linear-gradient(180deg, #FFB300 0%, #E65100 100%);
+                box-shadow: 0 6px 0 #BF360C, 0 10px 20px rgba(0,0,0,0.35);
+              }
+              .btn-blue {
+                background: linear-gradient(180deg, #40C4FF 0%, #0277BD 100%);
+                box-shadow: 0 6px 0 #01579B, 0 10px 20px rgba(0,0,0,0.35);
+              }
+              .btn-purple {
+                background: linear-gradient(180deg, #E040FB 0%, #7B1FA2 100%);
+                box-shadow: 0 6px 0 #4A148C, 0 10px 20px rgba(0,0,0,0.35);
+              }
+
+              .gold-badge {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: linear-gradient(180deg, #FFF9C4 0%, #FFE082 30%, #FFB300 100%);
+                border: 3px solid #FFF8E1;
+                box-shadow: 0 4px 0 #B78103, 0 6px 12px rgba(0,0,0,0.25);
+                border-radius: 30px;
+                padding: 6px 16px;
+                color: #5D4037;
+                font-weight: 900;
+                font-size: 1.05rem;
+                cursor: pointer;
+              }
+
+              .circle-btn {
+                width: 46px;
+                height: 46px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.3rem;
+                border: 3px solid #FFF8E1;
+                background: linear-gradient(180deg, #FFE082 0%, #FFA000 100%);
+                box-shadow: 0 5px 0 #B78103, 0 6px 12px rgba(0,0,0,0.25);
+                color: #4E342E;
+                cursor: pointer;
+                transition: transform 0.08s ease;
+              }
+              .circle-btn:active {
+                transform: translateY(3px);
+                box-shadow: 0 2px 0 #B78103;
+              }
+
+              #splash-screen {
+                justify-content: center;
+                align-items: center;
+                background: radial-gradient(circle at center, #FFA000 0%, #E65100 100%);
+                text-align: center;
+                padding: 24px;
+              }
+              .splash-logo-card {
+                background: rgba(255,255,255,0.18);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 4px solid rgba(255,255,255,0.5);
+                border-radius: 36px;
+                padding: 32px 24px;
+                box-shadow: inset 0 3px 6px rgba(255,255,255,0.6), 0 16px 36px rgba(0,0,0,0.35);
+                width: 85%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+              }
+              .studio-pill {
+                background: #4E342E;
+                color: #FFE082;
+                padding: 6px 18px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                margin-bottom: 20px;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+              }
+              .bullseye-logo {
+                width: 140px;
+                height: 140px;
+                margin-bottom: 16px;
+                animation: pulse-ring 2.2s infinite ease-in-out;
+              }
+              @keyframes pulse-ring {
+                0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)); }
+                50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(255,215,0,0.9)); }
+              }
+              .game-main-title {
+                font-size: 2.5rem;
+                font-weight: 900;
+                color: #FFF9C4;
+                text-shadow: 0 4px 0 #E65100, 0 8px 16px rgba(0,0,0,0.5);
+                margin-bottom: 6px;
+              }
+              .game-subtitle {
+                color: #FFFFFF;
+                font-size: 1.05rem;
+                font-weight: 700;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+                margin-bottom: 24px;
+              }
+              .splash-start-btn {
+                width: 100%;
+                padding: 16px 0;
+                font-size: 1.4rem;
+              }
+
+              #menu-screen {
+                padding: 18px;
+                justify-content: space-between;
+              }
+              .top-header-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                z-index: 20;
+              }
+              .menu-hero-area {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+                margin: auto 0;
+              }
+              .hero-badge-art {
+                width: 130px;
+                height: 130px;
+                position: relative;
+              }
+              .play-giant-btn {
+                width: 240px;
+                height: 72px;
+                font-size: 1.6rem;
+                border-radius: 36px;
+                animation: bounce-subtle 2s infinite ease-in-out;
+              }
+              @keyframes bounce-subtle {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-6px); }
+              }
+              .menu-sub-actions {
+                display: flex;
+                gap: 12px;
+                width: 100%;
+                max-width: 320px;
+              }
+              .sub-btn {
+                flex: 1;
+                padding: 12px 6px;
+                font-size: 0.95rem;
+                border-radius: 20px;
+              }
+              .menu-footer {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                padding-top: 10px;
+              }
+
+              #game-screen {
+                display: none;
+                flex-direction: column;
+                padding: 12px 14px;
+                height: 100%;
+              }
+              .game-top-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+              }
+              .stage-pill {
+                background: linear-gradient(180deg, #40C4FF 0%, #0288D1 100%);
+                color: white;
+                border: 3px solid #E1F5FE;
+                box-shadow: 0 4px 0 #01579B, 0 6px 12px rgba(0,0,0,0.25);
+                border-radius: 24px;
+                padding: 6px 18px;
+                font-weight: 900;
+                font-size: 1.1rem;
+                text-shadow: 0 2px 3px rgba(0,0,0,0.3);
+              }
+              
+              .question-ribbon-card {
+                position: relative;
+                background: linear-gradient(180deg, #FFFFFF 0%, #FFF8E1 100%);
+                border: 3.5px solid #FFE082;
+                border-radius: 20px;
+                padding: 12px 16px;
+                margin-bottom: 10px;
+                box-shadow: inset 0 2px 4px rgba(255,255,255,0.9), 0 6px 0 #FFA000, 0 10px 18px rgba(0,0,0,0.25);
+                text-align: center;
+              }
+              .category-tag {
+                display: inline-block;
+                background: #FF6F00;
+                color: #FFFFFF;
+                font-size: 0.75rem;
+                font-weight: 800;
+                padding: 3px 12px;
+                border-radius: 12px;
+                margin-bottom: 4px;
+              }
+              .question-text {
+                font-size: 1.25rem;
+                font-weight: 900;
+                color: #3E2723;
+                line-height: 1.35;
+              }
+              .trick-clickable {
+                color: #D84315;
+                text-decoration: underline;
+                cursor: pointer;
+              }
+
+              .canvas-arena {
+                flex: 1;
+                position: relative;
+                background: #FFFFFF;
+                border-radius: 24px;
+                border: 4px solid #FFE082;
+                box-shadow: inset 0 4px 8px rgba(0,0,0,0.1), 0 8px 0 #FFA000, 0 14px 24px rgba(0,0,0,0.3);
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                touch-action: none;
+                user-select: none;
+              }
+              #stage-svg {
+                width: 100%;
+                height: 100%;
+                display: block;
+                cursor: crosshair;
+              }
+
+              .target-pin {
+                position: absolute;
+                width: 52px;
+                height: 52px;
+                pointer-events: none;
+                transform: translate(-50%, -50%) scale(0);
+                transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                z-index: 50;
+              }
+              .target-pin.dropped {
+                transform: translate(-50%, -50%) scale(1);
+              }
+
+              .radar-hint-circle {
+                position: absolute;
+                border: 4px dashed #FFD600;
+                background: rgba(255, 235, 59, 0.25);
+                border-radius: 50%;
+                pointer-events: none;
+                transform: translate(-50%, -50%);
+                animation: radar-pulse 1.2s infinite ease-out;
+                z-index: 40;
+                display: none;
+              }
+              @keyframes radar-pulse {
+                0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.3; }
+              }
+
+              #feedback-toast {
+                position: absolute;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-30px);
+                opacity: 0;
+                background: #D50000;
+                color: white;
+                font-weight: 900;
+                font-size: 1.1rem;
+                padding: 8px 24px;
+                border-radius: 20px;
+                border: 3px solid #FF8A80;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+                pointer-events: none;
+                z-index: 80;
+                transition: transform 0.25s ease, opacity 0.25s ease;
+                white-space: nowrap;
+              }
+              #feedback-toast.show {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+              }
+
+              .game-bottom-bar {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                margin-top: 10px;
+              }
+              .help-btn {
+                flex: 1;
+                padding: 10px 4px;
+                font-size: 0.95rem;
+                border-radius: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+              }
+              .help-btn small {
+                font-size: 0.72rem;
+                opacity: 0.9;
+              }
+
+              .modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.65);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 100;
+                padding: 16px;
+              }
+              .modal-overlay.active {
+                display: flex;
+              }
+              .clay-modal {
+                width: 100%;
+                max-width: 380px;
+                background: linear-gradient(180deg, #FFFDE7 0%, #FFF8E1 100%);
+                border: 4px solid #FFE082;
+                border-radius: 32px;
+                padding: 24px 20px;
+                box-shadow: inset 0 3px 6px rgba(255,255,255,0.8), 0 16px 36px rgba(0,0,0,0.45);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                position: relative;
+              }
+              .modal-close-icon {
+                position: absolute;
+                top: 12px;
+                left: 14px;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: #FF5252;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                font-size: 1.1rem;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+              }
+              .modal-title {
+                font-size: 1.6rem;
+                font-weight: 900;
+                color: #E65100;
+                margin-bottom: 12px;
+              }
+
+              .victory-stars-box {
+                display: flex;
+                gap: 12px;
+                margin: 14px 0;
+              }
+              .star-icon {
+                font-size: 2.8rem;
+                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+                transform: scale(0);
+                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+              }
+              .star-icon.filled {
+                color: #FFD600;
+                transform: scale(1);
+              }
+              .star-icon.empty {
+                color: #BDBDBD;
+                transform: scale(0.9);
+              }
+              .victory-eval-text {
+                font-size: 1.4rem;
+                font-weight: 900;
+                color: #2E7D32;
+                margin-bottom: 6px;
+              }
+              .victory-reward-badge {
+                background: linear-gradient(180deg, #FFE082 0%, #FFA000 100%);
+                padding: 8px 24px;
+                border-radius: 20px;
+                font-weight: 900;
+                font-size: 1.15rem;
+                color: #4E342E;
+                margin-bottom: 20px;
+                border: 2px solid white;
+              }
+
+              .stages-scroll-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                width: 100%;
+                max-height: 340px;
+                overflow-y: auto;
+                padding: 10px 4px;
+                margin: 10px 0;
+              }
+              .stage-node-btn {
+                aspect-ratio: 1/1;
+                border-radius: 20px;
+                border: 3px solid white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                font-size: 1.15rem;
+                cursor: pointer;
+                position: relative;
+                box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+              }
+              .stage-node-btn.completed {
+                background: linear-gradient(180deg, #76FF03 0%, #43A047 100%);
+                color: white;
+              }
+              .stage-node-btn.current {
+                background: linear-gradient(180deg, #FFB300 0%, #E65100 100%);
+                color: white;
+                animation: pulse-ring 2s infinite ease-in-out;
+              }
+              .stage-node-btn.locked {
+                background: #B0BEC5;
+                color: #ECEFF1;
+                cursor: not-allowed;
+                box-shadow: 0 4px 0 #78909C;
+              }
+              .stage-node-stars {
+                font-size: 0.65rem;
+                margin-top: 2px;
+              }
+
+              .settings-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                padding: 10px 0;
+                border-bottom: 1px dashed #FFE082;
+                font-weight: 800;
+                font-size: 1.05rem;
+                color: #4E342E;
+              }
+              .switch {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 28px;
+              }
+              .switch input { opacity: 0; width: 0; height: 0; }
+              .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: #CFD8DC;
+                transition: .3s;
+                border-radius: 34px;
+              }
+              .slider:before {
+                position: absolute;
+                content: "";
+                height: 20px;
+                width: 20px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: .3s;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+              }
+              input:checked + .slider { background-color: #43A047; }
+              input:checked + .slider:before { transform: translateX(22px); }
+
+              @keyframes shake-anim {
+                0%, 100% { transform: translateX(0); }
+                20%, 60% { transform: translateX(-8px); }
+                40%, 80% { transform: translateX(8px); }
+              }
+              .shake {
+                animation: shake-anim 0.35s ease-in-out;
+              }
+            </style>
+          </head>
+          <body>
+
+          <div id="app-container">
+            <canvas id="confetti-canvas"></canvas>
+
+            <!-- 1. SPLASH SCREEN -->
+            <div id="splash-screen" class="screen active">
+              <div class="splash-logo-card">
+                <div class="studio-pill">✨ استوديو زيتونة للألعاب العربية ✨</div>
+                <svg class="bullseye-logo" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="46" fill="#FF1744" stroke="#FFF" stroke-width="4"/>
+                  <circle cx="50" cy="50" r="34" fill="#FFFFFF"/>
+                  <circle cx="50" cy="50" r="22" fill="#FF1744"/>
+                  <circle cx="50" cy="50" r="10" fill="#FFD600" stroke="#FFF" stroke-width="2"/>
+                  <line x1="50" y1="2" x2="50" y2="98" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+                  <line x1="2" y1="50" x2="98" y2="50" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+                </svg>
+                <h1 class="game-main-title">ضربة معلّم</h1>
+                <p class="game-subtitle">ثقافة • دقة ملاحظة • تصويب باللمس</p>
+                <button class="glossy-btn btn-green splash-start-btn" onclick="Game.startGameFromSplash()">
+                  🎯 العـب الآن 🎯
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. MAIN MENU SCREEN -->
+            <div id="menu-screen" class="screen">
+              <div class="top-header-row">
+                <div class="gold-badge" onclick="Game.openCoinsModal()">
+                  <span>💰</span>
+                  <span id="menu-coins-val">250</span>
+                  <span style="font-size: 1.2rem; color: #E65100;">+</span>
+                </div>
+                <div class="circle-btn" onclick="Game.openSettingsModal()">⚙️</div>
+              </div>
+
+              <div class="menu-hero-area">
+                <svg class="hero-badge-art" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="54" fill="url(#goldGrad)" stroke="#FFF" stroke-width="4"/>
+                  <circle cx="60" cy="60" r="40" fill="#FF1744"/>
+                  <circle cx="60" cy="60" r="28" fill="#FFF"/>
+                  <circle cx="60" cy="60" r="14" fill="#FFD600"/>
+                  <defs>
+                    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#FFF9C4"/>
+                      <stop offset="50%" stop-color="#FFB300"/>
+                      <stop offset="100%" stop-color="#E65100"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <button id="main-play-btn" class="glossy-btn btn-green play-giant-btn" onclick="Game.playCurrentStage()">
+                  الـعـب (مرحلة 1) 🎯
+                </button>
+
+                <div class="menu-sub-actions">
+                  <button class="glossy-btn btn-blue sub-btn" onclick="Game.openMapModal()">
+                    🗺️ الخريطة
+                  </button>
+                  <button class="glossy-btn btn-orange sub-btn" onclick="Game.claimDailyGift()">
+                    🎁 هدية يومية
+                  </button>
+                </div>
+              </div>
+
+              <div class="menu-footer">
+                <div class="gold-badge" style="font-size: 0.9rem;" onclick="Game.shareGame()">
+                  👥 مشاركة اللعبة وكسب 100 ذهبة
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. GAME SCREEN -->
+            <div id="game-screen" class="screen">
+              <div class="game-top-bar">
+                <div class="circle-btn" onclick="Game.goToMenu()">⌂</div>
+                <div class="stage-pill" id="game-stage-title">مرحلة 1</div>
+                <div class="gold-badge" onclick="Game.openCoinsModal()">
+                  <span>💰</span>
+                  <span id="game-coins-val">250</span>
+                  <span style="font-size: 1.1rem; color: #E65100;">+</span>
+                </div>
+              </div>
+
+              <div class="question-ribbon-card">
+                <span class="category-tag" id="game-category-tag">جغرافيا</span>
+                <div class="question-text" id="game-question-text">أين تقع مكة المكرمة في شبه الجزيرة؟</div>
+              </div>
+
+              <div class="canvas-arena" id="canvas-arena">
+                <div id="feedback-toast">🎯 ضربة معلم!</div>
+                <div id="radar-hint" class="radar-hint-circle"></div>
+                
+                <svg id="target-pin" class="target-pin" viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="26" fill="rgba(255, 23, 68, 0.3)" stroke="#FF1744" stroke-width="3"/>
+                  <circle cx="30" cy="30" r="16" fill="#FFFFFF" stroke="#FF1744" stroke-width="3"/>
+                  <circle cx="30" cy="30" r="6" fill="#FF1744"/>
+                  <line x1="30" y1="2" x2="30" y2="58" stroke="#FF1744" stroke-width="2"/>
+                  <line x1="2" y1="30" x2="58" y2="30" stroke="#FF1744" stroke-width="2"/>
+                </svg>
+
+                <svg id="stage-svg" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet"></svg>
+              </div>
+
+              <div class="game-bottom-bar">
+                <button class="glossy-btn btn-orange help-btn" onclick="Game.useHint()">
+                  <span>💡 تلميح</span>
+                  <small>(25 ذهبة)</small>
+                </button>
+                <button class="glossy-btn btn-blue help-btn" onclick="Game.askFriend()">
+                  <span>👥 اسأل صديق</span>
+                  <small>(مجاناً)</small>
+                </button>
+                <button class="glossy-btn btn-purple help-btn" onclick="Game.skipStage()">
+                  <span>⏩ تخطي</span>
+                  <small>(50 ذهبة)</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- MODALS -->
+            <div id="victory-modal" class="modal-overlay">
+              <div class="clay-modal">
+                <h2 class="modal-title">تهانينا!</h2>
+                <div class="victory-stars-box">
+                  <span id="star-1" class="star-icon">⭐</span>
+                  <span id="star-2" class="star-icon">⭐</span>
+                  <span id="star-3" class="star-icon">⭐</span>
+                </div>
+                <div id="victory-eval" class="victory-eval-text">🎯 ضربة معلّم! في الصميم!</div>
+                <div class="victory-reward-badge" id="victory-reward-text">كسبت +50 💰</div>
+                <button class="glossy-btn btn-green" style="width: 100%; padding: 14px 0; font-size: 1.25rem;" onclick="Game.nextStage()">
+                  المرحلة التالية ⏩
+                </button>
+              </div>
+            </div>
+
+            <div id="map-modal" class="modal-overlay">
+              <div class="clay-modal">
+                <div class="modal-close-icon" onclick="Game.closeModal('map-modal')">✕</div>
+                <h2 class="modal-title">خريطة المراحل</h2>
+                <div class="stages-scroll-grid" id="stages-grid-container"></div>
+              </div>
+            </div>
+
+            <div id="settings-modal" class="modal-overlay">
+              <div class="clay-modal">
+                <div class="modal-close-icon" onclick="Game.closeModal('settings-modal')">✕</div>
+                <h2 class="modal-title">الإعدادات</h2>
+                <div class="settings-row">
+                  <span>المؤثرات الصوتية 🔊</span>
+                  <label class="switch">
+                    <input type="checkbox" id="setting-sound" checked onchange="Game.toggleSound(this.checked)">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <span>الاهتزاز عند اللمس 📳</span>
+                  <label class="switch">
+                    <input type="checkbox" id="setting-vibrate" checked onchange="Game.toggleVibration(this.checked)">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row" style="cursor:pointer;" onclick="Game.resetGame()">
+                  <span style="color:#C62828;">إعادة تصفير التقدم 🔄</span>
+                  <span>⚠️</span>
+                </div>
+                <p style="margin-top: 16px; font-size: 0.8rem; color: #78909C;">ضربة معلّم - إصدار 1.0.0 © زيتونة</p>
+              </div>
+            </div>
+
+            <div id="coins-modal" class="modal-overlay">
+              <div class="clay-modal">
+                <div class="modal-close-icon" onclick="Game.closeModal('coins-modal')">✕</div>
+                <h2 class="modal-title">متجر الذهب</h2>
+                <p style="color:#5D4037; font-weight:700; margin-bottom:14px;">احصل على عملات إضافية لتفعيل التلميحات والتخطي!</p>
+                <button class="glossy-btn btn-green" style="width:100%; padding:12px 0; margin-bottom:10px;" onclick="Game.watchAdReward()">
+                  🎬 مشاهدة فيديو (+50 ذهبة)
+                </button>
+                <button class="glossy-btn btn-blue" style="width:100%; padding:12px 0;" onclick="Game.shareGame()">
+                  📢 مشاركة اللعبة (+100 ذهبة)
+                </button>
+              </div>
+            </div>
+
+            <div id="finale-modal" class="modal-overlay">
+              <div class="clay-modal">
+                <div style="font-size: 3.5rem;">🏆</div>
+                <h2 class="modal-title">ختام أسطوري!</h2>
+                <p style="font-weight: 800; color: #2E7D32; font-size: 1.15rem; margin-bottom: 8px;">
+                  لقد أتممت جميع مراحل اللعبة بنجاح باهر!
+                </p>
+                <p style="color: #455A64; font-size: 0.95rem; margin-bottom: 20px;">
+                  أنت أستاذ ومعلم في دقة الملاحظة وسرعة البديهة. ترقبوا المزيد من المراحل في التحديث القادم!
+                </p>
+                <button class="glossy-btn btn-green" style="width:100%; padding:14px 0;" onclick="Game.goToMenu(); Game.closeModal('finale-modal');">
+                  العودة للقائمة الرئيسية ⌂
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <script>
+          const AudioEngine = {
+            ctx: null,
+            enabled: true,
+
+            init() {
+              if (!this.ctx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) this.ctx = new AudioCtx();
+              }
+              if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume();
+              }
+            },
+
+            playWoodClick() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.06);
+              gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.06);
+            },
+
+            playPinDrop() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.09);
+              gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.09);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.09);
+            },
+
+            playBullseyeFanfare() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const notes = [523.25, 659.25, 783.99, 1046.50, 1318.5];
+              notes.forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime + idx * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(this.ctx.currentTime + idx * 0.08);
+                osc.stop(this.ctx.currentTime + idx * 0.08 + 0.35);
+              });
+            },
+
+            playCoinSound() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(987.77, this.ctx.currentTime);
+              osc.frequency.setValueAtTime(1318.5, this.ctx.currentTime + 0.07);
+              gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.25);
+            },
+
+            playError() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(90, this.ctx.currentTime + 0.18);
+              gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.18);
+            },
+
+            playHint() {
+              if (!this.enabled) return;
+              this.init();
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.25);
+              gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start();
+              osc.stop(this.ctx.currentTime + 0.25);
+            }
+          };
+
+          const Confetti = {
+            canvas: document.getElementById('confetti-canvas'),
+            ctx: null,
+            particles: [],
+            animating: false,
+
+            init() {
+              this.ctx = this.canvas.getContext('2d');
+              this.resize();
+              window.addEventListener('resize', () => this.resize());
+            },
+
+            resize() {
+              this.canvas.width = window.innerWidth;
+              this.canvas.height = window.innerHeight;
+            },
+
+            burst(x, y) {
+              this.particles = [];
+              const colors = ['#FFD600', '#FF1744', '#00E676', '#00B0FF', '#FF9100', '#FFFFFF'];
+              for (let i = 0; i < 70; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 4 + Math.random() * 8;
+                this.particles.push({
+                  x: x || this.canvas.width / 2,
+                  y: y || this.canvas.height / 3,
+                  vx: Math.cos(angle) * speed,
+                  vy: Math.sin(angle) * speed - 3,
+                  size: 5 + Math.random() * 7,
+                  color: colors[Math.floor(Math.random() * colors.length)],
+                  rotation: Math.random() * 360,
+                  rotSpeed: (Math.random() - 0.5) * 10,
+                  gravity: 0.25,
+                  opacity: 1
+                });
+              }
+              if (!this.animating) {
+                this.animating = true;
+                this.render();
+              }
+            },
+
+            render() {
+              if (!this.particles.length) {
+                this.animating = false;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                return;
+              }
+              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+              for (let i = this.particles.length - 1; i >= 0; i--) {
+                const p = this.particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.rotation += p.rotSpeed;
+                p.opacity -= 0.012;
+
+                if (p.opacity <= 0 || p.y > this.canvas.height) {
+                  this.particles.splice(i, 1);
+                  continue;
+                }
+
+                this.ctx.save();
+                this.ctx.translate(p.x, p.y);
+                this.ctx.rotate((p.rotation * Math.PI) / 180);
+                this.ctx.globalAlpha = p.opacity;
+                this.ctx.fillStyle = p.color;
+                this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.4);
+                this.ctx.restore();
+              }
+              requestAnimationFrame(() => this.render());
+            }
+          };
+
+          const STAGES = [
+            {
+              id: 1,
+              title: "أين تقع مكة المكرمة في شبه الجزيرة العربية؟",
+              category: "جغرافيا وخرائط",
+              target: { x: 230, y: 300, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#81D4FA"/>
+                <path d="M 120 70 Q 200 60, 320 80 Q 420 100, 480 180 Q 520 280, 480 380 Q 420 440, 300 450 Q 180 430, 160 360 Q 170 260, 140 180 Z" fill="#FFE082" stroke="#FFA000" stroke-width="4"/>
+                <path d="M 0 0 L 140 0 L 150 200 L 170 380 L 100 500 L 0 500 Z" fill="#4FC3F7" opacity="0.6"/>
+                <path d="M 440 120 Q 470 200, 520 240 L 600 220 L 600 0 Z" fill="#4FC3F7" opacity="0.6"/>
+                <path d="M 170 140 Q 190 240, 200 360" stroke="#FFB300" stroke-width="8" stroke-dasharray="8 8" fill="none"/>
+                <circle cx="230" cy="300" r="7" fill="#D50000" stroke="#FFF" stroke-width="2"/>
+                <text x="230" y="325" font-size="14" font-weight="bold" fill="#37474F" text-anchor="middle">مكة</text>
+                <circle cx="225" cy="210" r="5" fill="#546E7A"/>
+                <text x="225" y="200" font-size="12" fill="#455A64" text-anchor="middle">المدينة</text>
+                <circle cx="340" cy="260" r="5" fill="#546E7A"/>
+                <text x="340" y="250" font-size="12" fill="#455A64" text-anchor="middle">الرياض</text>
+                <text x="70" y="270" font-size="15" font-weight="bold" fill="#01579B">البحر الأحمر</text>
+                <text x="500" y="160" font-size="14" font-weight="bold" fill="#01579B">الخليج</text>
+              `
+            },
+            {
+              id: 2,
+              title: "حدد موقع عضلة القلب في الصدر البشري",
+              category: "علوم وتشريح",
+              target: { x: 330, y: 240, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#E8F5E9"/>
+                <path d="M 180 80 Q 300 60, 420 80 Q 470 180, 450 440 Q 300 460, 150 440 Q 130 180, 180 80 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
+                <rect x="260" y="20" width="80" height="70" rx="10" fill="#FFCCBC" stroke="#FF8A65" stroke-width="3"/>
+                <path d="M 210 160 C 180 180, 180 300, 220 340 C 250 330, 260 250, 250 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
+                <path d="M 390 160 C 420 180, 420 300, 380 340 C 350 330, 340 250, 350 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
+                <path d="M 230 190 Q 300 200, 370 190 M 220 240 Q 300 250, 380 240 M 230 290 Q 300 300, 370 290" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <path d="M 330 220 C 310 190, 280 220, 330 270 C 380 220, 350 190, 330 220 Z" fill="#D50000" stroke="#B71C1C" stroke-width="3"/>
+                <text x="300" y="475" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">القفص الصدري البشري</text>
+              `
+            },
+            {
+              id: 3,
+              title: "حدد منتصف الحبل المشدود تماماً (50%)",
+              category: "تقدير وفيزياء",
+              target: { x: 300, y: 250, r: 30 },
+              svg: `
+                <rect width="600" height="500" fill="#FFF9C4"/>
+                <rect x="70" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                <circle cx="85" cy="180" r="14" fill="#BCAAA4"/>
+                <rect x="500" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                <circle cx="515" cy="180" r="14" fill="#BCAAA4"/>
+                <path d="M 85 180 Q 300 320, 515 180" stroke="#FF8F00" stroke-width="12" fill="none" stroke-linecap="round"/>
+                <path d="M 0 420 Q 300 400, 600 420 L 600 500 L 0 500 Z" fill="#C8E6C9"/>
+                <text x="300" y="450" font-size="16" font-weight="bold" fill="#2E7D32" text-anchor="middle">صوّب على النقطة المنصفة بدقة مليمترية</text>
+              `
+            },
+            {
+              id: 4,
+              title: "اعثر على الوجه المبتسم وسط الوجوه العابسة",
+              category: "قوة ملاحظة",
+              target: { x: 420, y: 320, r: 32 },
+              svg: `
+                <rect width="600" height="500" fill="#ECEFF1"/>
+                <g id="faces-grid"></g>
+              `
+            },
+            {
+              id: 5,
+              title: "أين تقع 'الكعبة المشرفة'؟",
+              category: "تفكير جانبي وخدع",
+              target: { x: 300, y: 280, r: 40 },
+              trickTarget: true,
+              svg: `
+                <rect width="600" height="500" fill="#E0F7FA"/>
+                <ellipse cx="300" cy="340" rx="240" ry="110" fill="#FFFFFF" stroke="#B2EBF2" stroke-width="4"/>
+                <polygon points="230,230 300,190 370,230 300,270" fill="#424242"/>
+                <polygon points="230,230 300,270 300,350 230,310" fill="#212121"/>
+                <polygon points="370,230 300,270 300,350 370,310" fill="#111111"/>
+                <polygon points="230,250 300,290 300,305 230,265" fill="#FFD700"/>
+                <polygon points="370,250 300,290 300,305 370,265" fill="#FFC107"/>
+                <rect x="250" y="275" width="25" height="35" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
+                <text x="300" y="460" font-size="16" font-weight="bold" fill="#00838F" text-anchor="middle">فكر بذكاء... الحل قد يكون في أكثر من موضع!</text>
+              `
+            },
+            {
+              id: 6,
+              title: "حدد الزاوية القائمة تماماً (90 درجة)",
+              category: "رياضيات وتقدير",
+              target: { x: 420, y: 220, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#F3E5F5"/>
+                <g transform="translate(80, 140)">
+                  <line x1="0" y1="80" x2="100" y2="80" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="0" y1="80" x2="70" y2="10" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                  <text x="50" y="115" font-size="15" font-weight="bold" fill="#4A148C">أ</text>
+                </g>
+                <g transform="translate(240, 140)">
+                  <line x1="60" y1="80" x2="150" y2="80" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="60" y1="80" x2="10" y2="15" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                  <text x="75" y="115" font-size="15" font-weight="bold" fill="#004D40">ب</text>
+                </g>
+                <g transform="translate(370, 140)">
+                  <line x1="50" y1="80" x2="140" y2="80" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="50" y1="80" x2="50" y2="0" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                  <text x="65" y="115" font-size="15" font-weight="bold" fill="#BF360C">ج</text>
+                </g>
+                <text x="300" y="380" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">أي رأس من هذه الزوايا يشكل تعامداً مثالياً؟</text>
+              `
+            },
+            {
+              id: 7,
+              title: "حدد موقع أهرامات الجيزة بالقرب من دلتا النيل",
+              category: "جغرافيا ومعالم",
+              target: { x: 310, y: 215, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#FFF8E1"/>
+                <path d="M 0 0 L 600 0 L 600 80 Q 400 90, 310 110 Q 200 90, 0 80 Z" fill="#4FC3F7"/>
+                <text x="120" y="50" font-size="15" font-weight="bold" fill="#01579B">البحر الأبيض المتوسط</text>
+                <path d="M 480 130 Q 450 250, 520 400 L 600 400 L 600 130 Z" fill="#4FC3F7"/>
+                <path d="M 330 500 Q 320 380, 330 320 Q 340 260, 310 210 Q 270 170, 230 110 M 310 210 Q 340 160, 380 110" stroke="#0288D1" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <polygon points="310,200 295,225 325,225" fill="#FFA000" stroke="#E65100" stroke-width="2"/>
+                <text x="260" y="222" font-size="14" font-weight="bold" fill="#D84315">الأهرامات</text>
+                <circle cx="340" cy="215" r="4" fill="#37474F"/>
+                <text x="365" y="215" font-size="12" fill="#37474F">القاهرة</text>
+              `
+            },
+            {
+              id: 8,
+              title: "أين الخطأ الشاذ في هذه الساعة الحائطية؟",
+              category: "قوة ملاحظة",
+              target: { x: 395, y: 315, r: 32 },
+              svg: `
+                <rect width="600" height="500" fill="#E8EAF6"/>
+                <circle cx="300" cy="250" r="160" fill="#FFFFFF" stroke="#3F51B5" stroke-width="12"/>
+                <circle cx="300" cy="250" r="145" fill="#FAFAFA" stroke="#C5CAE9" stroke-width="2"/>
+                <circle cx="300" cy="250" r="8" fill="#D50000"/>
+                <line x1="300" y1="250" x2="300" y2="150" stroke="#212121" stroke-width="6" stroke-linecap="round"/>
+                <line x1="300" y1="250" x2="380" y2="250" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
+                <text x="300" y="130" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">12</text>
+                <text x="420" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">3</text>
+                <text x="300" y="380" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">6</text>
+                <text x="180" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">9</text>
+                <text x="395" y="325" font-size="24" font-weight="900" fill="#D50000" text-anchor="middle">13</text>
+                <text x="205" y="325" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">8</text>
+                <text x="375" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">2</text>
+                <text x="225" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">10</text>
+                <text x="300" y="460" font-size="15" font-weight="bold" fill="#37474F" text-anchor="middle">دقق النظر في أرقام وجه الساعة!</text>
+              `
+            },
+            {
+              id: 9,
+              title: "حدد مركز النجمة الخماسية في علم المملكة المغربية",
+              category: "ثقافة وأعلام",
+              target: { x: 300, y: 250, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#ECEFF1"/>
+                <rect x="75" y="100" width="450" height="300" rx="16" fill="#C62828" stroke="#8E0000" stroke-width="6"/>
+                <polygon points="300,175 322,230 380,230 334,265 352,320 300,285 248,320 266,265 220,230 278,230" fill="none" stroke="#2E7D32" stroke-width="10" stroke-linejoin="round"/>
+                <circle cx="300" cy="250" r="8" fill="#1B5E20" opacity="0.3"/>
+                <text x="300" y="440" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">العلم الوطني المغربي الشريف</text>
+              `
+            },
+            {
+              id: 10,
+              title: "أين نقطة الارتكاز (نقطة التوازن) الصحيحة لتوازن الجسمين؟",
+              category: "فيزياء وميكانيكا",
+              target: { x: 230, y: 310, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#E0F2F1"/>
+                <line x1="100" y1="280" x2="500" y2="280" stroke="#795548" stroke-width="14" stroke-linecap="round"/>
+                <rect x="100" y="190" width="70" height="80" rx="10" fill="#455A64" stroke="#263238" stroke-width="4"/>
+                <text x="135" y="240" font-size="18" font-weight="bold" fill="#FFF" text-anchor="middle">12 كغ</text>
+                <rect x="440" y="225" width="50" height="45" rx="8" fill="#78909C" stroke="#37474F" stroke-width="3"/>
+                <text x="465" y="255" font-size="15" font-weight="bold" fill="#FFF" text-anchor="middle">4 كغ</text>
+                <polygon points="230,290 210,340 250,340" fill="#FF8F00" stroke="#E65100" stroke-width="3"/>
+                <text x="230" y="365" font-size="14" font-weight="bold" fill="#E65100" text-anchor="middle">الموضع (أ)</text>
+                <polygon points="300,290 285,340 315,340" fill="#B0BEC5" stroke="#78909C" stroke-width="2"/>
+                <text x="300" y="365" font-size="14" fill="#78909C" text-anchor="middle">الموضع (ب)</text>
+                <line x1="50" y1="340" x2="550" y2="340" stroke="#00796B" stroke-width="4"/>
+                <text x="300" y="440" font-size="15" font-weight="bold" fill="#004D40" text-anchor="middle">قانون الروافع: القوة × ذراعها = المقاومة × ذراعها</text>
+              `
+            },
+            {
+              id: 11,
+              title: "أين القفل المفتوح الوحيد بين هذه الأقفال؟",
+              category: "قوة ملاحظة",
+              target: { x: 380, y: 260, r: 35 },
+              svg: `
+                <rect width="600" height="500" fill="#FFF3E0"/>
+                <g id="locks-grid"></g>
+                <text x="300" y="455" font-size="15" font-weight="bold" fill="#E65100" text-anchor="middle">جميع الأقفال محكمة الإغلاق ما عدا قفل وحيد!</text>
+              `
+            },
+            {
+              id: 12,
+              title: "حدد مركز عين الهدف الذهبي (ضربة معلّم الختامية)",
+              category: "التحدي الأسطوري",
+              target: { x: 300, y: 240, r: 25 },
+              svg: `
+                <rect width="600" height="500" fill="#212121"/>
+                <circle cx="300" cy="240" r="180" fill="#37474F" stroke="#FFE082" stroke-width="8"/>
+                <circle cx="300" cy="240" r="140" fill="#0288D1"/>
+                <circle cx="300" cy="240" r="100" fill="#D50000"/>
+                <circle cx="300" cy="240" r="60" fill="#FFFFFF"/>
+                <circle cx="300" cy="240" r="25" fill="#FFD600" stroke="#FFF" stroke-width="4"/>
+                <line x1="300" y1="50" x2="300" y2="430" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                <line x1="110" y1="240" x2="490" y2="240" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                <text x="300" y="460" font-size="18" font-weight="bold" fill="#FFD600" text-anchor="middle">أثبت مهارتك وأصب نقطة الصفر بدقة 100%!</text>
+              `
+            }
+          ];
+
+          const Game = {
+            currentStageIdx: 0,
+            coins: 250,
+            stageProgress: {},
+            vibrationEnabled: true,
+
+            init() {
+              this.loadState();
+              Confetti.init();
+              this.updateCoinsUI();
+              this.bindArenaTouch();
+            },
+
+            loadState() {
+              try {
+                const savedCoins = localStorage.getItem('dm_coins');
+                if (savedCoins !== null) this.coins = parseInt(savedCoins, 10);
+                const savedProgress = localStorage.getItem('dm_progress');
+                if (savedProgress) this.stageProgress = JSON.parse(savedProgress);
+                const savedStage = localStorage.getItem('dm_current_stage');
+                if (savedStage !== null) this.currentStageIdx = parseInt(savedStage, 10);
+                const savedSound = localStorage.getItem('dm_sound');
+                if (savedSound !== null) {
+                  AudioEngine.enabled = savedSound === 'true';
+                  document.getElementById('setting-sound').checked = AudioEngine.enabled;
+                }
+                const savedVib = localStorage.getItem('dm_vibration');
+                if (savedVib !== null) {
+                  this.vibrationEnabled = savedVib === 'true';
+                  document.getElementById('setting-vibrate').checked = this.vibrationEnabled;
+                }
+              } catch (e) {}
+            },
+
+            saveState() {
+              try {
+                localStorage.setItem('dm_coins', this.coins);
+                localStorage.setItem('dm_progress', JSON.stringify(this.stageProgress));
+                localStorage.setItem('dm_current_stage', this.currentStageIdx);
+                localStorage.setItem('dm_sound', AudioEngine.enabled);
+                localStorage.setItem('dm_vibration', this.vibrationEnabled);
+              } catch (e) {}
+            },
+
+            vibrate(ms) {
+              if (this.vibrationEnabled && navigator.vibrate) {
+                navigator.vibrate(ms);
+              }
+            },
+
+            showScreen(screenId) {
+              document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+              const target = document.getElementById(screenId);
+              if (target) target.classList.add('active');
+            },
+
+            startGameFromSplash() {
+              AudioEngine.playWoodClick();
+              this.showScreen('menu-screen');
+            },
+
+            goToMenu() {
+              AudioEngine.playWoodClick();
+              this.updateCoinsUI();
+              const btn = document.getElementById('main-play-btn');
+              if (btn) btn.innerHTML = `الـعـب (مرحلة ${this.currentStageIdx + 1}) 🎯`;
+              this.showScreen('menu-screen');
+            },
+
+            playCurrentStage() {
+              AudioEngine.playWoodClick();
+              this.loadStage(this.currentStageIdx);
+              this.showScreen('game-screen');
+            },
+
+            loadStage(idx) {
+              if (idx >= STAGES.length) {
+                this.openModal('finale-modal');
+                return;
+              }
+              this.currentStageIdx = idx;
+              this.saveState();
+              const stage = STAGES[idx];
+
+              document.getElementById('game-stage-title').innerText = `مرحلة ${stage.id}`;
+              document.getElementById('game-category-tag').innerText = stage.category;
+
+              const qEl = document.getElementById('game-question-text');
+              if (stage.id === 5) {
+                qEl.innerHTML = `أين تقع <span id="trick-word" class="trick-clickable" onclick="Game.onTrickClick(event)">'الكعبة المشرفة'</span>؟`;
+              } else {
+                qEl.innerText = stage.title;
+              }
+
+              const svgEl = document.getElementById('stage-svg');
+              svgEl.innerHTML = stage.svg;
+
+              if (stage.id === 4) this.renderFacesGrid();
+              if (stage.id === 11) this.renderLocksGrid();
+
+              const pin = document.getElementById('target-pin');
+              pin.classList.remove('dropped');
+              document.getElementById('radar-hint').style.display = 'none';
+
+              this.updateCoinsUI();
+            },
+
+            renderFacesGrid() {
+              const parent = document.getElementById('faces-grid');
+              if (!parent) return;
+              let markup = '';
+              for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 5; c++) {
+                  const cx = 100 + c * 100;
+                  const cy = 110 + r * 90;
+                  const isSmiling = (r === 2 && c === 3);
+                  if (isSmiling) {
+                    markup += `
+                      <circle cx="${cx}" cy="${cy}" r="32" fill="#FFEB3B" stroke="#F57F17" stroke-width="3"/>
+                      <circle cx="${cx - 10}" cy="${cy - 8}" r="4" fill="#212121"/>
+                      <circle cx="${cx + 10}" cy="${cy - 8}" r="4" fill="#212121"/>
+                      <path d="M ${cx - 16} ${cy + 4} Q ${cx} ${cy + 24}, ${cx + 16} ${cy + 4}" stroke="#D84315" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    `;
+                  } else {
+                    markup += `
+                      <circle cx="${cx}" cy="${cy}" r="32" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
+                      <circle cx="${cx - 10}" cy="${cy - 6}" r="3.5" fill="#212121"/>
+                      <circle cx="${cx + 10}" cy="${cy - 6}" r="3.5" fill="#212121"/>
+                      <path d="M ${cx - 14} ${cy + 14} Q ${cx} ${cy + 2}, ${cx + 14} ${cy + 14}" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    `;
+                  }
+                }
+              }
+              parent.innerHTML = markup;
+            },
+
+            renderLocksGrid() {
+              const parent = document.getElementById('locks-grid');
+              if (!parent) return;
+              let markup = '';
+              for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 4; c++) {
+                  const cx = 120 + c * 120;
+                  const cy = 130 + r * 105;
+                  const isOpen = (r === 1 && c === 2);
+                  if (isOpen) {
+                    markup += `
+                      <g transform="translate(${cx - 25}, ${cy - 30})">
+                        <path d="M 12 12 Q 12 -18, 35 -18 Q 48 -18, 48 -6" fill="none" stroke="#78909C" stroke-width="6" stroke-linecap="round"/>
+                        <rect x="0" y="10" width="50" height="42" rx="8" fill="#FFC107" stroke="#FFA000" stroke-width="3"/>
+                        <circle cx="25" cy="28" r="4" fill="#37474F"/>
+                      </g>
+                    `;
+                  } else {
+                    markup += `
+                      <g transform="translate(${cx - 25}, ${cy - 20})">
+                        <path d="M 10 10 Q 25 -15, 40 10" fill="none" stroke="#78909C" stroke-width="6" stroke-linecap="round"/>
+                        <rect x="0" y="8" width="50" height="42" rx="8" fill="#FFB300" stroke="#FF8F00" stroke-width="3"/>
+                        <circle cx="25" cy="26" r="4" fill="#37474F"/>
+                      </g>
+                    `;
+                  }
+                }
+              }
+              parent.innerHTML = markup;
+            },
+
+            bindArenaTouch() {
+              const arena = document.getElementById('canvas-arena');
+
+              const handlePointer = (e) => {
+                e.preventDefault();
+                const rect = arena.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const px = clientX - rect.left;
+                const py = clientY - rect.top;
+
+                const svgX = (px / rect.width) * 600;
+                const svgY = (py / rect.height) * 500;
+
+                const pin = document.getElementById('target-pin');
+                pin.style.left = px + 'px';
+                pin.style.top = py + 'px';
+                pin.classList.remove('dropped');
+                void pin.offsetWidth;
+                pin.classList.add('dropped');
+
+                AudioEngine.playPinDrop();
+                this.evaluateTarget(svgX, svgY, clientX, clientY);
+              };
+
+              arena.addEventListener('click', handlePointer);
+              arena.addEventListener('touchstart', handlePointer, { passive: false });
+            },
+
+            onTrickClick(e) {
+              e.stopPropagation();
+              AudioEngine.playBullseyeFanfare();
+              this.vibrate([100, 50, 100]);
+              Confetti.burst(window.innerWidth / 2, 100);
+              this.showEvaluationModal(100, "عبقرية خارج الصندوق! 🎯", 3);
+            },
+
+            evaluateTarget(x, y, scrX, scrY) {
+              const stage = STAGES[this.currentStageIdx];
+              const target = stage.target;
+              const dist = Math.hypot(x - target.x, y - target.y);
+
+              if (dist <= target.r * 0.5) {
+                AudioEngine.playBullseyeFanfare();
+                this.vibrate([80, 50, 120]);
+                Confetti.burst(scrX, scrY);
+                this.showToast("🎯 ضربة معلّم! 100%", "#2E7D32");
+                setTimeout(() => this.showEvaluationModal(100, "🎯 ضربة معلّم! إصابة في الصميم!", 3), 700);
+              }
+              else if (dist <= target.r * 1.0) {
+                AudioEngine.playBullseyeFanfare();
+                this.vibrate(60);
+                Confetti.burst(scrX, scrY);
+                this.showToast("⭐ ممتاز! قريب جداً من المركز", "#1565C0");
+                setTimeout(() => this.showEvaluationModal(80, "⭐ ممتاز جداً! أداء رائع!", 2), 700);
+              }
+              else if (dist <= target.r * 1.5) {
+                AudioEngine.playCoinSound();
+                this.vibrate(40);
+                this.showToast("👍 جيد! إصابة مقبولة", "#F57F17");
+                setTimeout(() => this.showEvaluationModal(50, "👍 جيد! نجحت في اجتياز المرحلة", 1), 700);
+              }
+              else {
+                AudioEngine.playError();
+                this.vibrate(30);
+                const arena = document.getElementById('canvas-arena');
+                arena.classList.remove('shake');
+                void arena.offsetWidth;
+                arena.classList.add('shake');
+
+                let tip = "❌ بارد! حاول مجدداً";
+                if (dist < target.r * 2.5) tip = "🔥 دافئ! أنت قريب، دقق أكثر!";
+                this.showToast(tip, "#D50000");
+              }
+            },
+
+            showToast(text, color) {
+              const toast = document.getElementById('feedback-toast');
+              toast.innerText = text;
+              toast.style.background = color || '#D50000';
+              toast.classList.add('show');
+              clearTimeout(this._toastTimer);
+              this._toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+              }, 1200);
+            },
+
+            showEvaluationModal(score, title, stars) {
+              const stage = STAGES[this.currentStageIdx];
+              let earnedCoins = (stars === 3) ? 50 : (stars === 2) ? 30 : 15;
+              this.coins += earnedCoins;
+              this.stageProgress[stage.id] = { stars, score };
+              this.saveState();
+              this.updateCoinsUI();
+
+              document.getElementById('victory-eval').innerText = title;
+              document.getElementById('victory-reward-text').innerText = `كسبت +${earnedCoins} 💰`;
+
+              for (let s = 1; s <= 3; s++) {
+                const el = document.getElementById(`star-${s}`);
+                el.className = 'star-icon';
+                setTimeout(() => {
+                  el.className = `star-icon ${s <= stars ? 'filled' : 'empty'}`;
+                }, s * 160);
+              }
+
+              this.openModal('victory-modal');
+            },
+
+            nextStage() {
+              AudioEngine.playWoodClick();
+              this.closeModal('victory-modal');
+              if (this.currentStageIdx + 1 < STAGES.length) {
+                this.loadStage(this.currentStageIdx + 1);
+              } else {
+                this.openModal('finale-modal');
+              }
+            },
+
+            useHint() {
+              if (this.coins < 25) {
+                this.showToast("⚠️ ليس لديك ذهب كافٍ! (يلزم 25)", "#C62828");
+                AudioEngine.playError();
+                return;
+              }
+              this.coins -= 25;
+              this.saveState();
+              this.updateCoinsUI();
+              AudioEngine.playHint();
+
+              const stage = STAGES[this.currentStageIdx];
+              const target = stage.target;
+              const arena = document.getElementById('canvas-arena');
+              const rect = arena.getBoundingClientRect();
+
+              const hintEl = document.getElementById('radar-hint');
+              const px = (target.x / 600) * rect.width;
+              const py = (target.y / 500) * rect.height;
+
+              hintEl.style.left = px + 'px';
+              hintEl.style.top = py + 'px';
+              hintEl.style.width = '90px';
+              hintEl.style.height = '90px';
+              hintEl.style.display = 'block';
+
+              this.showToast("💡 تم تضييق دائرة البحث!", "#FF8F00");
+            },
+
+            askFriend() {
+              AudioEngine.playWoodClick();
+              const stage = STAGES[this.currentStageIdx];
+              const challengeText = `🎯 ساعدني في حل هذا اللغز في لعبة "ضربة معلم"!\nالمرحلة ${stage.id}: ${stage.title}\nهل يمكنك إصابة الهدف؟`;
+
+              if (navigator.share) {
+                navigator.share({
+                  title: 'لعبة ضربة معلم',
+                  text: challengeText
+                }).catch(() => {});
+              } else {
+                navigator.clipboard?.writeText(challengeText);
+                this.showToast("📋 تم نسخ نص السؤال لمشاركته مع أصدقائك!", "#0277BD");
+              }
+            },
+
+            skipStage() {
+              if (this.coins < 50) {
+                this.showToast("⚠️ يلزم 50 ذهبة للتخطي!", "#C62828");
+                AudioEngine.playError();
+                return;
+              }
+              this.coins -= 50;
+              this.saveState();
+              this.updateCoinsUI();
+              AudioEngine.playWoodClick();
+              this.showToast("⏩ تم تخطي المرحلة!", "#6A1B9A");
+              setTimeout(() => {
+                this.nextStage();
+              }, 600);
+            },
+
+            claimDailyGift() {
+              AudioEngine.playBullseyeFanfare();
+              Confetti.burst();
+              this.coins += 100;
+              this.saveState();
+              this.updateCoinsUI();
+              this.showToast("🎁 مبروك! كسبت 100 ذهبة مجانية!", "#2E7D32");
+            },
+
+            watchAdReward() {
+              AudioEngine.playCoinSound();
+              Confetti.burst();
+              this.coins += 50;
+              this.saveState();
+              this.updateCoinsUI();
+              this.closeModal('coins-modal');
+              this.showToast("🎬 شكراً لدعمك! +50 ذهبة", "#2E7D32");
+            },
+
+            shareGame() {
+              AudioEngine.playCoinSound();
+              this.coins += 100;
+              this.saveState();
+              this.updateCoinsUI();
+              this.showToast("🌟 شكراً لمشاركتك! +100 ذهبة", "#2E7D32");
+              if (navigator.share) {
+                navigator.share({
+                  title: 'ضربة معلم',
+                  text: 'العب لعبة الألغاز العربية المميزة "ضربة معلم"!'
+                }).catch(() => {});
+              }
+            },
+
+            updateCoinsUI() {
+              const el1 = document.getElementById('menu-coins-val');
+              const el2 = document.getElementById('game-coins-val');
+              if (el1) el1.innerText = this.coins;
+              if (el2) el2.innerText = this.coins;
+            },
+
+            openMapModal() {
+              AudioEngine.playWoodClick();
+              const grid = document.getElementById('stages-grid-container');
+              grid.innerHTML = '';
+
+              STAGES.forEach((stg, i) => {
+                const prog = this.stageProgress[stg.id];
+                const isCompleted = !!prog;
+                const isCurrent = (i === this.currentStageIdx);
+                const isLocked = (!isCompleted && i > this.currentStageIdx);
+
+                const div = document.createElement('div');
+                div.className = `stage-node-btn ${isCompleted ? 'completed' : isCurrent ? 'current' : 'locked'}`;
+                
+                let starsText = isCompleted ? '⭐'.repeat(prog.stars) : isLocked ? '🔒' : '🎯';
+                div.innerHTML = `<span>${stg.id}</span><span class="stage-node-stars">${starsText}</span>`;
+
+                if (!isLocked) {
+                  div.onclick = () => {
+                    AudioEngine.playWoodClick();
+                    Game.closeModal('map-modal');
+                    Game.loadStage(i);
+                    Game.showScreen('game-screen');
+                  };
+                }
+                grid.appendChild(div);
+              });
+
+              this.openModal('map-modal');
+            },
+
+            openSettingsModal() {
+              AudioEngine.playWoodClick();
+              this.openModal('settings-modal');
+            },
+
+            openCoinsModal() {
+              AudioEngine.playWoodClick();
+              this.openModal('coins-modal');
+            },
+
+            openModal(id) {
+              const m = document.getElementById(id);
+              if (m) m.classList.add('active');
+            },
+
+            closeModal(id) {
+              AudioEngine.playWoodClick();
+              const m = document.getElementById(id);
+              if (m) m.classList.remove('active');
+            },
+
+            toggleSound(val) {
+              AudioEngine.enabled = val;
+              this.saveState();
+            },
+
+            toggleVibration(val) {
+              this.vibrationEnabled = val;
+              this.saveState();
+            },
+
+            resetGame() {
+              if (confirm("هل تريد بالتأكيد إعادة تصفير تقدمك بالكامل في اللعبة؟")) {
+                localStorage.clear();
+                this.currentStageIdx = 0;
+                this.coins = 250;
+                this.stageProgress = {};
+                this.saveState();
+                location.reload();
+              }
+            }
+          };
+
+          window.addEventListener('DOMContentLoaded', () => {
+            Game.init();
+          });
+          </script>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Download & Setup Gradle 8.5
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O gradle-bin.zip
+          unzip -q gradle-bin.zip
+          chmod +x gradle-8.5/bin/gradle
+          ./gradle-8.5/bin/gradle -v
+
+      - name: Build Android APK (assembleDebug)
+        run: |
+          ./gradle-8.5/bin/gradle assembleDebug --stacktrace --no-daemon
+
+      - name: Verify Generated APK
+        run: |
+          ls -la app/build/outputs/apk/debug/
+          test -f app/build/outputs/apk/debug/app-debug.apk || (echo "APK not found!" && exit 1)
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Darbat-Mouallim-APK
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
