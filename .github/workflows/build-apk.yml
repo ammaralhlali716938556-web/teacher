@@ -1,4 +1,4 @@
-name: Build Android APK - Darbat Mouallim
+name: Build Android APK - Darbat Mouallim 200 Stages
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-apk:
-    name: Build Android APK
+    name: Build Android APK (200 Stages Edition)
     runs-on: ubuntu-latest
 
     steps:
@@ -78,8 +78,8 @@ jobs:
                   applicationId "com.zaytouna.darbatmouallim"
                   minSdk 24
                   targetSdk 34
-                  versionCode 2
-                  versionName "1.1.0"
+                  versionCode 3
+                  versionName "2.0.0"
               }
 
               buildTypes {
@@ -257,7 +257,7 @@ jobs:
           }
           EOF
 
-      - name: Generate HTML5 Game Assets
+      - name: Generate HTML5 Game Assets (200 Stages Edition)
         run: |
           cat << 'HTMLEOF' > app/src/main/assets/index.html
           <!DOCTYPE html>
@@ -265,7 +265,10 @@ jobs:
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-            <title>ضربة معلم - لعبة الألغاز والتصويب والمعلومات</title>
+            <title>ضربة معلم - موسوعة الألغاز والمعلومات 200 مرحلة</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet">
             <style>
               :root {
                 --primary-orange: #FF6F00;
@@ -282,6 +285,7 @@ jobs:
                 --crimson-red: #FF1744;
                 --text-dark: #37474F;
                 --text-light: #FFFFFF;
+                --font-main: 'Cairo', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               }
 
               * {
@@ -291,10 +295,10 @@ jobs:
                 user-select: none;
                 -webkit-user-select: none;
                 -webkit-tap-highlight-color: transparent;
+                font-family: var(--font-main);
               }
 
               body {
-                font-family: 'Segoe UI', 'Cairo', 'Tajawal', Tahoma, sans-serif;
                 background: linear-gradient(175deg, var(--sunset-top) 0%, var(--sunset-mid) 40%, var(--sunset-bot) 75%, #FFB300 100%);
                 color: var(--text-dark);
                 min-height: 100vh;
@@ -355,6 +359,7 @@ jobs:
                 align-items: center;
                 justify-content: center;
                 transition: transform 0.08s ease, box-shadow 0.08s ease;
+                letter-spacing: -0.2px;
               }
               .glossy-btn:active {
                 transform: translateY(4px) !important;
@@ -397,10 +402,10 @@ jobs:
                 border: 3px solid #FFF8E1;
                 box-shadow: 0 4px 0 #B78103, 0 6px 12px rgba(0,0,0,0.25);
                 border-radius: 30px;
-                padding: 6px 16px;
+                padding: 5px 14px;
                 color: #5D4037;
                 font-weight: 900;
-                font-size: 1.05rem;
+                font-size: 1rem;
                 cursor: pointer;
               }
 
@@ -449,15 +454,15 @@ jobs:
                 color: #FFE082;
                 padding: 6px 18px;
                 border-radius: 20px;
-                font-size: 0.85rem;
-                font-weight: 700;
+                font-size: 0.88rem;
+                font-weight: 800;
                 letter-spacing: 0.5px;
                 margin-bottom: 20px;
                 box-shadow: 0 3px 6px rgba(0,0,0,0.3);
               }
               .bullseye-logo {
-                width: 140px;
-                height: 140px;
+                width: 130px;
+                height: 130px;
                 margin-bottom: 16px;
                 animation: pulse-ring 2.2s infinite ease-in-out;
               }
@@ -466,23 +471,28 @@ jobs:
                 50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(255,215,0,0.9)); }
               }
               .game-main-title {
-                font-size: 2.5rem;
+                font-size: 2.6rem;
                 font-weight: 900;
                 color: #FFF9C4;
                 text-shadow: 0 4px 0 #E65100, 0 8px 16px rgba(0,0,0,0.5);
-                margin-bottom: 6px;
+                margin-bottom: 4px;
               }
               .game-subtitle {
                 color: #FFFFFF;
                 font-size: 1.05rem;
-                font-weight: 700;
+                font-weight: 800;
                 text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-                margin-bottom: 24px;
+                margin-bottom: 20px;
               }
-              .splash-start-btn {
-                width: 100%;
-                padding: 16px 0;
-                font-size: 1.4rem;
+              .splash-stages-badge {
+                background: #D84315;
+                color: #FFF;
+                padding: 4px 16px;
+                border-radius: 16px;
+                font-size: 0.9rem;
+                font-weight: 900;
+                margin-bottom: 24px;
+                border: 2px solid white;
               }
 
               #menu-screen {
@@ -500,18 +510,18 @@ jobs:
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 16px;
+                gap: 14px;
                 margin: auto 0;
               }
               .hero-badge-art {
-                width: 130px;
-                height: 130px;
+                width: 125px;
+                height: 125px;
                 position: relative;
               }
               .play-giant-btn {
-                width: 250px;
-                height: 72px;
-                font-size: 1.6rem;
+                width: 260px;
+                height: 70px;
+                font-size: 1.55rem;
                 border-radius: 36px;
                 animation: bounce-subtle 2s infinite ease-in-out;
               }
@@ -542,11 +552,11 @@ jobs:
                 background: linear-gradient(180deg, #E65100 0%, #FF8F00 30%, #FFA000 70%, #FFB300 100%);
               }
               .map-header {
-                padding: 12px 14px 8px;
+                padding: 10px 14px 6px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                background: rgba(0,0,0,0.15);
+                background: rgba(0,0,0,0.18);
                 border-bottom: 2px solid rgba(255,255,255,0.2);
                 z-index: 30;
               }
@@ -560,13 +570,44 @@ jobs:
                 color: #E65100;
                 box-shadow: 0 3px 6px rgba(0,0,0,0.2);
               }
+              
+              .map-world-tabs {
+                display: flex;
+                background: rgba(0,0,0,0.25);
+                padding: 6px 10px;
+                gap: 6px;
+                z-index: 30;
+                overflow-x: auto;
+              }
+              .world-tab-btn {
+                flex: 1;
+                min-width: 80px;
+                padding: 6px 4px;
+                background: rgba(255,255,255,0.2);
+                border: 2px solid rgba(255,255,255,0.4);
+                border-radius: 14px;
+                color: white;
+                font-size: 0.76rem;
+                font-weight: 800;
+                text-align: center;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: background 0.15s, border-color 0.15s;
+              }
+              .world-tab-btn.active {
+                background: linear-gradient(180deg, #FFD54F 0%, #FF8F00 100%);
+                border-color: #FFF;
+                color: #3E2723;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+              }
+
               .map-scroll-area {
                 flex: 1;
                 overflow-y: auto;
                 overflow-x: hidden;
                 position: relative;
                 -webkit-overflow-scrolling: touch;
-                padding-bottom: 90px;
+                padding-bottom: 85px;
               }
               .map-scroll-area::-webkit-scrollbar {
                 width: 6px;
@@ -578,7 +619,7 @@ jobs:
               .map-content-wrapper {
                 position: relative;
                 width: 100%;
-                min-height: 1950px;
+                min-height: 2200px;
               }
               .map-road-svg {
                 position: absolute;
@@ -591,12 +632,12 @@ jobs:
               }
               .map-zone-banner {
                 position: absolute;
-                left: 5%;
-                width: 90%;
-                background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,249,196,0.92) 100%);
+                left: 6%;
+                width: 88%;
+                background: linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,249,196,0.94) 100%);
                 border: 2.5px solid #FFD54F;
                 border-radius: 16px;
-                padding: 8px 14px;
+                padding: 8px 12px;
                 font-size: 0.95rem;
                 font-weight: 900;
                 color: #D84315;
@@ -606,8 +647,8 @@ jobs:
               }
               .map-node {
                 position: absolute;
-                width: 64px;
-                height: 64px;
+                width: 62px;
+                height: 62px;
                 transform: translate(-50%, -50%);
                 border-radius: 50%;
                 display: flex;
@@ -645,7 +686,7 @@ jobs:
               .map-node-stars {
                 position: absolute;
                 bottom: -18px;
-                font-size: 0.7rem;
+                font-size: 0.68rem;
                 white-space: nowrap;
                 filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
               }
@@ -722,11 +763,11 @@ jobs:
                 margin-bottom: 4px;
               }
               .question-text {
-                font-size: 1.18rem;
+                font-size: 1.16rem;
                 font-weight: 900;
                 color: #3E2723;
                 line-height: 1.35;
-                margin-bottom: 4px;
+                margin-bottom: 3px;
               }
               .question-clue {
                 font-size: 0.8rem;
@@ -763,8 +804,8 @@ jobs:
 
               .target-pin {
                 position: absolute;
-                width: 52px;
-                height: 52px;
+                width: 50px;
+                height: 50px;
                 pointer-events: none;
                 transform: translate(-50%, -50%) scale(0);
                 transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -836,7 +877,7 @@ jobs:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.68);
+                background: rgba(0,0,0,0.7);
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
                 display: none;
@@ -850,7 +891,7 @@ jobs:
               }
               .clay-modal {
                 width: 100%;
-                max-width: 400px;
+                max-width: 410px;
                 max-height: 90vh;
                 overflow-y: auto;
                 background: linear-gradient(180deg, #FFFDE7 0%, #FFF8E1 100%);
@@ -887,7 +928,7 @@ jobs:
                 font-size: 1.55rem;
                 font-weight: 900;
                 color: #E65100;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
               }
 
               .trivia-card-box {
@@ -896,7 +937,7 @@ jobs:
                 border: 2px solid #FFD54F;
                 border-radius: 20px;
                 padding: 14px 14px;
-                margin: 12px 0 16px;
+                margin: 10px 0 14px;
                 text-align: right;
                 box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 10px rgba(0,0,0,0.1);
               }
@@ -913,7 +954,7 @@ jobs:
               }
               .trivia-text-content {
                 font-size: 0.88rem;
-                font-weight: 600;
+                font-weight: 700;
                 line-height: 1.55;
                 color: #455A64;
               }
@@ -921,7 +962,7 @@ jobs:
               .victory-stars-box {
                 display: flex;
                 gap: 12px;
-                margin: 8px 0;
+                margin: 6px 0;
               }
               .star-icon {
                 font-size: 2.6rem;
@@ -948,7 +989,7 @@ jobs:
                 padding: 6px 20px;
                 border-radius: 20px;
                 font-weight: 900;
-                font-size: 1.1rem;
+                font-size: 1.05rem;
                 color: #4E342E;
                 margin-bottom: 6px;
                 border: 2px solid white;
@@ -1010,7 +1051,6 @@ jobs:
           <div id="app-container">
             <canvas id="confetti-canvas"></canvas>
 
-            <!-- 1. SPLASH SCREEN -->
             <div id="splash-screen" class="screen active">
               <div class="splash-logo-card">
                 <div class="studio-pill">✨ استوديو زيتونة للألعاب العربية ✨</div>
@@ -1024,13 +1064,13 @@ jobs:
                 </svg>
                 <h1 class="game-main-title">ضربة معلّم</h1>
                 <p class="game-subtitle">ثقافة ومعلومات • دقة ملاحظة • تصويب باللمس</p>
+                <div class="splash-stages-badge">🏆 رحلة 200 مرحلة عبر 4 عوالم شيقة 🏆</div>
                 <button class="glossy-btn btn-green splash-start-btn" onclick="Game.startGameFromSplash()">
                   🎯 العـب الآن 🎯
                 </button>
               </div>
             </div>
 
-            <!-- 2. MAIN MENU SCREEN -->
             <div id="menu-screen" class="screen">
               <div class="top-header-row">
                 <div class="gold-badge" onclick="Game.openCoinsModal()">
@@ -1057,7 +1097,7 @@ jobs:
                 </svg>
 
                 <button id="main-play-btn" class="glossy-btn btn-green play-giant-btn" onclick="Game.openMapScreen()">
-                  خريطة المراحل 🗺️
+                  خريطة الـ 200 مرحلة 🗺️
                 </button>
 
                 <div class="menu-sub-actions">
@@ -1077,11 +1117,10 @@ jobs:
               </div>
             </div>
 
-            <!-- 3. MAP SCREEN (Dedicated Winding Adventure Road) -->
             <div id="map-screen" class="screen">
               <div class="map-header">
                 <div class="circle-btn" onclick="Game.goToMenu()">←</div>
-                <div class="map-progress-pill" id="map-progress-counter">المراحل: 0 / 15</div>
+                <div class="map-progress-pill" id="map-progress-counter">المراحل: 0 / 200</div>
                 <div class="gold-badge" onclick="Game.openCoinsModal()">
                   <span>💰</span>
                   <span id="map-coins-val">250</span>
@@ -1089,14 +1128,17 @@ jobs:
                 </div>
               </div>
 
+              <div class="map-world-tabs">
+                <div class="world-tab-btn active" id="wtab-1" onclick="Game.switchWorldTab(1)">🌴 العالم 1<br><small>1 - 50</small></div>
+                <div class="world-tab-btn" id="wtab-2" onclick="Game.switchWorldTab(2)">🏛️ العالم 2<br><small>51 - 100</small></div>
+                <div class="world-tab-btn" id="wtab-3" onclick="Game.switchWorldTab(3)">⚡ العالم 3<br><small>101 - 150</small></div>
+                <div class="world-tab-btn" id="wtab-4" onclick="Game.switchWorldTab(4)">🏆 العالم 4<br><small>151 - 200</small></div>
+              </div>
+
               <div class="map-scroll-area" id="map-scroll-container">
                 <div class="map-content-wrapper" id="map-content-wrapper">
                   <svg class="map-road-svg" id="map-road-svg"></svg>
-                  
-                  <div class="map-zone-banner" style="top: 20px;">🌴 المنطقة الأولى: واحة المعرفة وتاريخ الأجداد</div>
-                  <div class="map-zone-banner" style="top: 660px;">🏛️ المنطقة الثانية: وادي المعالم والتشريح العلمي</div>
-                  <div class="map-zone-banner" style="top: 1300px;">⚡ المنطقة الثالثة: قمة الفكر والفيزياء والتحدي الأسطوري</div>
-
+                  <div class="map-zone-banner" id="map-world-banner" style="top: 15px;">🌴 العالم 1: واحة المعرفة وتاريخ الأجداد</div>
                   <div id="map-nodes-container"></div>
                 </div>
               </div>
@@ -1108,7 +1150,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 4. GAME SCREEN -->
             <div id="game-screen" class="screen">
               <div class="game-top-bar">
                 <div class="circle-btn" onclick="Game.openMapScreen()">🗺️</div>
@@ -1123,7 +1164,7 @@ jobs:
               <div class="question-ribbon-card">
                 <span class="category-tag" id="game-category-tag">جغرافيا وتاريخ</span>
                 <div class="question-text" id="game-question-text">أين تقع مكة المكرمة في شبه الجزيرة؟</div>
-                <div class="question-clue" id="game-question-clue">صوّب غرب شبه الجزيرة بالقرب من ساحل البحر الأحمر.</div>
+                <div class="question-clue" id="game-question-clue">صوّب غرب شبه الجزيرة بمحاذاة ساحل البحر الأحمر.</div>
               </div>
 
               <div class="canvas-arena" id="canvas-arena">
@@ -1157,7 +1198,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 5. MODALS -->
             <div id="victory-modal" class="modal-overlay">
               <div class="clay-modal">
                 <h2 class="modal-title">إصابة موفّقة!</h2>
@@ -1175,7 +1215,7 @@ jobs:
                     <span id="trivia-card-title">معلومة ضربة معلّم</span>
                   </div>
                   <p class="trivia-text-content" id="trivia-card-text">
-                    هنا تظهر المعلومة الثقافية أو التاريخية أو العلمية الموثقة حول اللغز!
+                    هنا تظهر المعلومة الثقافية الموسوعية الموثقة حول اللغز!
                   </p>
                 </div>
 
@@ -1220,7 +1260,7 @@ jobs:
                   <span style="color:#C62828;">إعادة تصفير التقدم 🔄</span>
                   <span>⚠️</span>
                 </div>
-                <p style="margin-top: 16px; font-size: 0.8rem; color: #78909C;">ضربة معلّم - موسوعة الألغاز العربية 1.1.0 © زيتونة</p>
+                <p style="margin-top: 16px; font-size: 0.82rem; color: #78909C; font-weight:700;">ضربة معلّم - الإصدار الموسوعي الذهبي 200 مرحلة © زيتونة</p>
               </div>
             </div>
 
@@ -1240,13 +1280,13 @@ jobs:
 
             <div id="finale-modal" class="modal-overlay">
               <div class="clay-modal">
-                <div style="font-size: 3.5rem;">🏆</div>
-                <h2 class="modal-title">ختام أسطوري!</h2>
-                <p style="font-weight: 800; color: #2E7D32; font-size: 1.15rem; margin-bottom: 8px;">
-                  لقد أتممت جميع مراحل خريطة ضربة معلّم بنجاح باهر!
+                <div style="font-size: 3.8rem;">👑</div>
+                <h2 class="modal-title">وسام المعلّم الأكبر!</h2>
+                <p style="font-weight: 800; color: #2E7D32; font-size: 1.2rem; margin-bottom: 8px;">
+                  ألف مبروك! لقد ختمت جميع مراحل اللعبة الـ 200 بنجاح أسطوري!
                 </p>
-                <p style="color: #455A64; font-size: 0.95rem; margin-bottom: 20px;">
-                  أنت أستاذ ومعلم في دقة الملاحظة ورصيد المعلومات الثقافية. ترقبوا المزيد من المراحل والمناطق في التحديث القادم!
+                <p style="color: #455A64; font-size: 0.95rem; font-weight: 700; margin-bottom: 20px;">
+                  لقد أصبحت معلماً حقيقياً في الثقافة العامة والعلوم والجغرافيا ودقة الملاحظة. ترقبوا المزيد من المراحل والمغامرات في التحديث القادم!
                 </p>
                 <button class="glossy-btn btn-green" style="width:100%; padding:14px 0;" onclick="Game.openMapScreen(); Game.closeModal('finale-modal');">
                   العودة لخريطة المراحل 🗺️
@@ -1450,313 +1490,172 @@ jobs:
             }
           };
 
-          const STAGES = [
-            {
-              id: 1,
-              title: "أين تقع مكة المكرمة في شبه الجزيرة العربية؟",
-              category: "🕌 جغرافيا وتاريخ إسلامي",
-              clue: "صوّب غرب شبه الجزيرة بالقرب من ساحل البحر الأحمر في منطقة الحجاز.",
-              target: { x: 230, y: 300, r: 36 },
-              triviaTitle: "عاصمة القلوب - مكة المكرمة",
-              triviaFact: "تقع مكة المكرمة على خط طول 39.8° وخط عرض 21.4° بارتفاع 277 متراً عن سطح البحر. تحتضن المسجد الحرام والكعبة المشرفة وبئر زمزم المبارك الذي يتدفق ماؤه العذب دون انقطاع منذ أكثر من 4000 عام منذ عهد نبي الله إسماعيل وأمه هاجر عليهما السلام.",
-              svg: `
-                <rect width="600" height="500" fill="#81D4FA"/>
-                <path d="M 120 70 Q 200 60, 320 80 Q 420 100, 480 180 Q 520 280, 480 380 Q 420 440, 300 450 Q 180 430, 160 360 Q 170 260, 140 180 Z" fill="#FFE082" stroke="#FFA000" stroke-width="4"/>
-                <path d="M 0 0 L 140 0 L 150 200 L 170 380 L 100 500 L 0 500 Z" fill="#4FC3F7" opacity="0.6"/>
-                <path d="M 440 120 Q 470 200, 520 240 L 600 220 L 600 0 Z" fill="#4FC3F7" opacity="0.6"/>
-                <path d="M 170 140 Q 190 240, 200 360" stroke="#FFB300" stroke-width="8" stroke-dasharray="8 8" fill="none"/>
-                <circle cx="230" cy="300" r="7" fill="#D50000" stroke="#FFF" stroke-width="2"/>
-                <text x="230" y="325" font-size="14" font-weight="bold" fill="#37474F" text-anchor="middle">مكة</text>
-                <circle cx="225" cy="210" r="5" fill="#546E7A"/>
-                <text x="225" y="200" font-size="12" fill="#455A64" text-anchor="middle">المدينة</text>
-                <circle cx="340" cy="260" r="5" fill="#546E7A"/>
-                <text x="340" y="250" font-size="12" fill="#455A64" text-anchor="middle">الرياض</text>
-                <text x="70" y="270" font-size="15" font-weight="bold" fill="#01579B">البحر الأحمر</text>
-                <text x="500" y="160" font-size="14" font-weight="bold" fill="#01579B">الخليج</text>
-              `
-            },
-            {
-              id: 2,
-              title: "حدد موقع عضلة القلب في الصدر البشري",
-              category: "🫀 علوم وتشريح الإنسان",
-              clue: "يقع القلب في التجويف الصدري بين الرئتين، مائلاً قليلاً نحو اليسار.",
-              target: { x: 330, y: 240, r: 36 },
-              triviaTitle: "معجزة المضخة الحيوية",
-              triviaFact: "عضلة القلب بحجم قبضة اليد وتزن نحو 300 غرام فقط، لكنها تنبض حوالي 100,000 مرة في اليوم وتضخ أكثر من 7,500 لتر من الدم يومياً عبر شبكة أوعية دموية يتجاوز طولها 96,000 كيلومتر، أي ما يكفي للدوران حول الأرض مرتين ونصف!",
-              svg: `
-                <rect width="600" height="500" fill="#E8F5E9"/>
-                <path d="M 180 80 Q 300 60, 420 80 Q 470 180, 450 440 Q 300 460, 150 440 Q 130 180, 180 80 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
-                <rect x="260" y="20" width="80" height="70" rx="10" fill="#FFCCBC" stroke="#FF8A65" stroke-width="3"/>
-                <path d="M 210 160 C 180 180, 180 300, 220 340 C 250 330, 260 250, 250 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
-                <path d="M 390 160 C 420 180, 420 300, 380 340 C 350 330, 340 250, 350 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
-                <path d="M 230 190 Q 300 200, 370 190 M 220 240 Q 300 250, 380 240 M 230 290 Q 300 300, 370 290" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/>
-                <path d="M 330 220 C 310 190, 280 220, 330 270 C 380 220, 350 190, 330 220 Z" fill="#D50000" stroke="#B71C1C" stroke-width="3"/>
-                <text x="300" y="475" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">القفص الصدري البشري</text>
-              `
-            },
-            {
-              id: 3,
-              title: "حدد موقع أهرامات الجيزة بالقرب من دلتا النيل",
-              category: "🏛️ معالم وآثار تاريخية",
-              clue: "تقع الأهرامات على الضفة الغربية لنهر النيل جنوب غرب القاهرة مباشرة.",
-              target: { x: 310, y: 215, r: 35 },
-              triviaTitle: "عجيبة العالم الباقية - الأهرامات",
-              triviaFact: "بُني الهرم الأكبر (خوفو) حوالي عام 2560 قبل الميلاد، وظل أطول بناء صنعه الإنسان لمدة 3800 عام بارتفاع أصلي 146.6م. يتكون من 2.3 مليون كتلة حجرية تزن نحو 6 ملايين طن تم رصّها بدقة هندسية وفلكية مذهلة دون آلات حديثة.",
-              svg: `
-                <rect width="600" height="500" fill="#FFF8E1"/>
-                <path d="M 0 0 L 600 0 L 600 80 Q 400 90, 310 110 Q 200 90, 0 80 Z" fill="#4FC3F7"/>
-                <text x="120" y="50" font-size="15" font-weight="bold" fill="#01579B">البحر الأبيض المتوسط</text>
-                <path d="M 480 130 Q 450 250, 520 400 L 600 400 L 600 130 Z" fill="#4FC3F7"/>
-                <path d="M 330 500 Q 320 380, 330 320 Q 340 260, 310 210 Q 270 170, 230 110 M 310 210 Q 340 160, 380 110" stroke="#0288D1" stroke-width="8" fill="none" stroke-linecap="round"/>
-                <polygon points="310,200 295,225 325,225" fill="#FFA000" stroke="#E65100" stroke-width="2"/>
-                <text x="260" y="222" font-size="14" font-weight="bold" fill="#D84315">الأهرامات</text>
-                <circle cx="340" cy="215" r="4" fill="#37474F"/>
-                <text x="365" y="215" font-size="12" fill="#37474F">القاهرة</text>
-              `
-            },
-            {
-              id: 4,
-              title: "حدد مركز النجمة الخماسية في علم المغرب",
-              category: "🇲🇦 ثقافة وأعلام وطنية",
-              clue: "صوّب بدقة على النواة المركزية للنجمة الخماسية الخضراء المتشابكة.",
-              target: { x: 300, y: 250, r: 35 },
-              triviaTitle: "دلالات راية المملكة المغربية",
-              triviaFact: "اعتُمدت النجمة الخماسية الخضراء (الخاتم السليماني) رسمياً عام 1915 في عهد السلطان مولاي يوسف. ترمز الزوايا الخمس لأركان الإسلام الخمسة، بينما يرمز اللون الأخضر للنماء والسلام، وخلفية العلم الحمراء ترمز للشجاعة والأصالة.",
-              svg: `
-                <rect width="600" height="500" fill="#ECEFF1"/>
-                <rect x="75" y="100" width="450" height="300" rx="16" fill="#C62828" stroke="#8E0000" stroke-width="6"/>
-                <polygon points="300,175 322,230 380,230 334,265 352,320 300,285 248,320 266,265 220,230 278,230" fill="none" stroke="#2E7D32" stroke-width="10" stroke-linejoin="round"/>
-                <circle cx="300" cy="250" r="8" fill="#1B5E20" opacity="0.3"/>
-                <text x="300" y="440" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">العلم الوطني المغربي الشريف</text>
-              `
-            },
-            {
-              id: 5,
-              title: "حدد منتصف الحبل المشدود تماماً (50%)",
-              category: "📐 تقدير وأبعاد هندسية",
-              clue: "قدّر المسافة المتساوية بدقة مليمترية بين نقطتي التثبيت في الطرفين.",
-              target: { x: 300, y: 250, r: 30 },
-              triviaTitle: "دقة التقدير البصري ونقطة الوسط",
-              triviaFact: "تُعرف هذه النقطة في الهندسة بـ 'نقطة الوسط' (Midpoint). وقد طوّر الإنسان القديم مهارة التقدير بالعين المجردة لبناء الجسور وتشييد السفن الشراعية قبل آلاف السنين من اختراع أجهزة الليزر والمساطر الدقيقة.",
-              svg: `
-                <rect width="600" height="500" fill="#FFF9C4"/>
-                <rect x="70" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
-                <circle cx="85" cy="180" r="14" fill="#BCAAA4"/>
-                <rect x="500" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
-                <circle cx="515" cy="180" r="14" fill="#BCAAA4"/>
-                <path d="M 85 180 Q 300 320, 515 180" stroke="#FF8F00" stroke-width="12" fill="none" stroke-linecap="round"/>
-                <path d="M 0 420 Q 300 400, 600 420 L 600 500 L 0 500 Z" fill="#C8E6C9"/>
-                <text x="300" y="450" font-size="16" font-weight="bold" fill="#2E7D32" text-anchor="middle">صوّب على النقطة المنصفة بدقة مليمترية</text>
-              `
-            },
-            {
-              id: 6,
-              title: "أين يقع مضيق هرمز بين الخليج العربي وبحر عمان؟",
-              category: "🌍 جغرافيا وممرات استراتيجية",
-              clue: "الممر المائي الضيق في شمال سلطنة عُمان وجنوب إيران الذي يربط مياه الخليج بالمحيط.",
-              target: { x: 480, y: 190, r: 35 },
-              triviaTitle: "شريان الطاقة العالمي - مضيق هرمز",
-              triviaFact: "يُعد مضيق هرمز أهم ممر مائي لتجارة النفط في العالم؛ فعرضه عند أضيق نقطة يبلغ 39 كم فقط، ويمر عبره يومياً قرابة 21 مليون برميل نفط، ما يمثل خُمس (20%) استهلاك العالم اليومي من البترول السائل.",
-              svg: `
-                <rect width="600" height="500" fill="#E1F5FE"/>
-                <path d="M 400 240 Q 480 200, 480 180 Q 460 210, 410 290 Z" fill="#FFE082" stroke="#FFA000" stroke-width="3"/>
-                <path d="M 320 60 Q 480 140, 560 160 L 600 60 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="3"/>
-                <path d="M 100 120 Q 300 160, 470 180 Q 520 220, 580 320" stroke="#0288D1" stroke-width="40" fill="none" opacity="0.6"/>
-                <text x="240" y="160" font-size="16" font-weight="bold" fill="#01579B">الخليج العربي</text>
-                <text x="520" y="300" font-size="16" font-weight="bold" fill="#01579B">بحر عُمان</text>
-                <text x="440" y="100" font-size="14" fill="#37474F">إيران</text>
-                <text x="410" y="270" font-size="13" fill="#37474F">شبه جزيرة مسندم</text>
-              `
-            },
-            {
-              id: 7,
-              title: "حدد موقع قوقعة السمع داخل الأذن الداخلية",
-              category: "👂 تشريح الحواس والسمع",
-              clue: "العضو الحلزوني الصغير الذي يشبه صدفة الحلزون في أعماق الأذن.",
-              target: { x: 340, y: 240, r: 34 },
-              triviaTitle: "معجزة السمع - القوقعة",
-              triviaFact: "القوقعة (Cochlea) أنبوب حلزوني دقيق بطول 3 سنتيمترات ملفوف حول نفسه مرتين ونصف. يحتوي على 16,000 خلية شعرية فائقة الحساسية تحول الذبذبات الميكانيكية إلى نبضات عصبية يفسرها المخ كلغات وأصوات وموسيقى.",
-              svg: `
-                <rect width="600" height="500" fill="#FCE4EC"/>
-                <path d="M 80 120 C 140 80, 160 220, 110 320 C 70 280, 60 200, 80 120 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
-                <path d="M 120 210 L 230 210" stroke="#D7CCC8" stroke-width="16" stroke-linecap="round"/>
-                <ellipse cx="230" cy="210" rx="4" ry="18" fill="#B0BEC5"/>
-                <path d="M 310 170 Q 320 120, 360 140 Q 330 170, 310 170 Z" fill="none" stroke="#90CAF9" stroke-width="8"/>
-                <path d="M 330 220 C 360 220, 370 250, 350 265 C 330 270, 320 250, 335 240 C 345 235, 350 245, 340 248" fill="none" stroke="#E91E63" stroke-width="10" stroke-linecap="round"/>
-                <text x="300" y="440" font-size="16" font-weight="bold" fill="#880E4F" text-anchor="middle">الأذن البشرية: من طبلة الأذن إلى القوقعة العصبية</text>
-              `
-            },
-            {
-              id: 8,
-              title: "حدد الرأس الذي يشكل زاوية قائمة عمودية (90°)",
-              category: "📐 هندسة ورياضيات",
-              clue: "ابحث عن التعامد المثالي المتطابق مع مربع الزاوية القائمة.",
-              target: { x: 420, y: 220, r: 35 },
-              triviaTitle: "سر حبل الفراعنة ونظرية فيثاغورس",
-              triviaFact: "استخدم البناؤون في مصر القديمة حبلاً به 12 عقدة تفصلها مسافات متساوية لصنع مثلث أطواله (3، 4، 5)؛ للحصول على زاوية قائمة مثالية لضبط قواعد المعابد، وهو المبدأ الذي صاغه فيثاغورس لاحقاً بنظريته الشهيرة (a² + b² = c²).",
-              svg: `
-                <rect width="600" height="500" fill="#F3E5F5"/>
-                <g transform="translate(80, 140)">
-                  <line x1="0" y1="80" x2="100" y2="80" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="0" y1="80" x2="70" y2="10" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
-                  <text x="50" y="115" font-size="15" font-weight="bold" fill="#4A148C">أ (45°)</text>
-                </g>
-                <g transform="translate(240, 140)">
-                  <line x1="60" y1="80" x2="150" y2="80" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="60" y1="80" x2="10" y2="15" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
-                  <text x="75" y="115" font-size="15" font-weight="bold" fill="#004D40">ب (120°)</text>
-                </g>
-                <g transform="translate(370, 140)">
-                  <line x1="50" y1="80" x2="140" y2="80" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="50" y1="80" x2="50" y2="0" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
-                  <text x="65" y="115" font-size="15" font-weight="bold" fill="#BF360C">ج (90°)</text>
-                </g>
-                <text x="300" y="380" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">أي رأس من هذه الزوايا يشكل تعامداً مثالياً؟</text>
-              `
-            },
-            {
-              id: 9,
-              title: "أين الرقم الخاطئ الشاذ في هذه الساعة الحائطية؟",
-              category: "👁️ قوة ملاحظة وتدقيق",
-              clue: "دقق في تسلسل الأرقام حول المحيط، هناك رقم لا وجود له في الساعات العادية!",
-              target: { x: 395, y: 315, r: 32 },
-              triviaTitle: "العمى الانتباهي وخداع الدماغ",
-              triviaFact: "يعتمد هذا اللغز على ظاهرة 'العمى الانتباهي' (Inattentional Blindness)؛ حيث يميل عقل الإنسان إلى ملء الفراغات وتوقع النمط المألوف تلقائياً دون تدقيق، مما يجعلنا نتجاوز الأخطاء الفاضحة ما لم نقم بتركيز الوعي بشكل مقصود.",
-              svg: `
-                <rect width="600" height="500" fill="#E8EAF6"/>
-                <circle cx="300" cy="250" r="160" fill="#FFFFFF" stroke="#3F51B5" stroke-width="12"/>
-                <circle cx="300" cy="250" r="145" fill="#FAFAFA" stroke="#C5CAE9" stroke-width="2"/>
-                <circle cx="300" cy="250" r="8" fill="#D50000"/>
-                <line x1="300" y1="250" x2="300" y2="150" stroke="#212121" stroke-width="6" stroke-linecap="round"/>
-                <line x1="300" y1="250" x2="380" y2="250" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
-                <text x="300" y="130" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">12</text>
-                <text x="420" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">3</text>
-                <text x="300" y="380" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">6</text>
-                <text x="180" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">9</text>
-                <text x="395" y="325" font-size="24" font-weight="900" fill="#D50000" text-anchor="middle">13</text>
-                <text x="205" y="325" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">8</text>
-                <text x="375" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">2</text>
-                <text x="225" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">10</text>
-                <text x="300" y="460" font-size="15" font-weight="bold" fill="#37474F" text-anchor="middle">دقق النظر في أرقام وجه الساعة!</text>
-              `
-            },
-            {
-              id: 10,
-              title: "أين يجب وضع نقطة الارتكاز لموازنة الثقلين (12 كغ و 4 كغ)؟",
-              category: "⚖️ فيزياء وميكانيكا الروافع",
-              clue: "وفق قانون الروافع، يجب أن تكون نقطة الارتكاز أقرب إلى الجسم الأثقل.",
-              target: { x: 230, y: 310, r: 35 },
-              triviaTitle: "قانون الروافع وكلمة أرخميدس الشهيرة",
-              triviaFact: "صاغ العالم الإغريقي أرخميدس قانون الروافع (القوة × ذراعها = المقاومة × ذراعها) في القرن الثالث ق.م، وقال مقولته الشهيرة: 'أعطوني نقطة ارتكاز وسأرفع لكم كوكب الأرض!'. هذا القانون هو حجر الزاوية للمقصات والرافعات والموازين الحديثة.",
-              svg: `
-                <rect width="600" height="500" fill="#E0F2F1"/>
-                <line x1="100" y1="280" x2="500" y2="280" stroke="#795548" stroke-width="14" stroke-linecap="round"/>
-                <rect x="100" y="190" width="70" height="80" rx="10" fill="#455A64" stroke="#263238" stroke-width="4"/>
-                <text x="135" y="240" font-size="18" font-weight="bold" fill="#FFF" text-anchor="middle">12 كغ</text>
-                <rect x="440" y="225" width="50" height="45" rx="8" fill="#78909C" stroke="#37474F" stroke-width="3"/>
-                <text x="465" y="255" font-size="15" font-weight="bold" fill="#FFF" text-anchor="middle">4 كغ</text>
-                <polygon points="230,290 210,340 250,340" fill="#FF8F00" stroke="#E65100" stroke-width="3"/>
-                <text x="230" y="365" font-size="14" font-weight="bold" fill="#E65100" text-anchor="middle">الموضع (أ)</text>
-                <polygon points="300,290 285,340 315,340" fill="#B0BEC5" stroke="#78909C" stroke-width="2"/>
-                <text x="300" y="365" font-size="14" fill="#78909C" text-anchor="middle">الموضع (ب)</text>
-                <line x1="50" y1="340" x2="550" y2="340" stroke="#00796B" stroke-width="4"/>
-                <text x="300" y="440" font-size="15" font-weight="bold" fill="#004D40" text-anchor="middle">قانون الروافع: القوة × ذراعها = المقاومة × ذراعها</text>
-              `
-            },
-            {
-              id: 11,
-              title: "أين تقع كلمة 'الكعبة' المشرفة؟",
-              category: "💡 تفكير جانبي وخارج الصندوق",
-              clue: "فكر كمعلّم! يمكنك إصابة الكعبة في الرسمة، أو النقر على الكلمة في نص السؤال!",
-              target: { x: 300, y: 280, r: 40 },
-              trickTarget: true,
-              triviaTitle: "التفكير الجانبي وفن ضربة معلّم",
-              triviaFact: "صاغ الطبيب والمفكر إدوارد دي بونو مفهوم 'التفكير الجانبي' (Lateral Thinking) عام 1967، وهو التفكير الذي يحرر العقل من القيود المنطقية المعتادة للوصول إلى حلول مبتكرة وسريعة من زوايا غير متوقعة.",
-              svg: `
-                <rect width="600" height="500" fill="#E0F7FA"/>
-                <ellipse cx="300" cy="340" rx="240" ry="110" fill="#FFFFFF" stroke="#B2EBF2" stroke-width="4"/>
-                <polygon points="230,230 300,190 370,230 300,270" fill="#424242"/>
-                <polygon points="230,230 300,270 300,350 230,310" fill="#212121"/>
-                <polygon points="370,230 300,270 300,350 370,310" fill="#111111"/>
-                <polygon points="230,250 300,290 300,305 230,265" fill="#FFD700"/>
-                <polygon points="370,250 300,290 300,305 370,265" fill="#FFC107"/>
-                <rect x="250" y="275" width="25" height="35" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
-                <text x="300" y="460" font-size="16" font-weight="bold" fill="#00838F" text-anchor="middle">فكر بذكاء... الحل قد يكون في أكثر من موضع!</text>
-              `
-            },
-            {
-              id: 12,
-              title: "حدد موقع برج إيفل الشهير على خريطة باريس",
-              category: "🗼 جغرافيا ومعالم عالمية",
-              clue: "المعلم الحديدي الشامخ بالقرب من ضفة نهر السين في ساحة شامب دي مارس.",
-              target: { x: 280, y: 230, r: 35 },
-              triviaTitle: "سيدة الحديد - برج إيفل",
-              triviaFact: "شُيد برج إيفل عام 1889 بمناسبة المعرض العالمي بباريس، ويبلغ ارتفاعه 330 متراً ويزن 10,100 طن. كان مقرراً هدمه بعد 20 عاماً، إلا أن استخدامه كبرج لبث إشارات الراديو والاتصالات العسكرية أنقذه ليصبح رمزاً سياحياً لفرنسا.",
-              svg: `
-                <rect width="600" height="500" fill="#ECEFF1"/>
-                <path d="M 0 180 Q 200 160, 300 240 Q 420 320, 600 280" stroke="#4FC3F7" stroke-width="38" fill="none" stroke-linecap="round"/>
-                <text x="460" y="340" font-size="15" font-weight="bold" fill="#0277BD">نهر السين</text>
-                <rect x="230" y="210" width="100" height="120" rx="10" fill="#C8E6C9" stroke="#81C784" stroke-width="2"/>
-                <polygon points="280,180 265,250 295,250" fill="#795548" stroke="#4E342E" stroke-width="2"/>
-                <rect x="270" y="230" width="20" height="4" fill="#FFE082"/>
-                <circle cx="280" cy="180" r="4" fill="#FFD54F"/>
-                <text x="280" y="270" font-size="13" font-weight="bold" fill="#3E2723" text-anchor="middle">برج إيفل</text>
-              `
-            },
-            {
-              id: 13,
-              title: "اعثر على الوجه الوحيد الذي يبتسم وسط جمع الوجوه العابسة",
-              category: "🙂 دقة ملاحظة وسرعة بديهة",
-              clue: "ابحث في الصف الثالث من الوجوه، هناك وجه يبتسم بهدوء وثقة!",
-              target: { x: 420, y: 320, r: 32 },
-              triviaTitle: "منطقة التعرف على الوجوه في الدماغ",
-              triviaFact: "يمتلك الدماغ البشري منطقة عصبية متخصصة تسمى 'تلفيف الوجه المغزلي' (FFA)، تتيح لنا تمييز الوجوه وتعابير المشاعر الدقيقة (كالفرح، الحزن، والغضب) في أقل من 100 جزء من الثانية لحماية الإنسان وبناء التواصل الاجتماعي.",
-              svg: `
-                <rect width="600" height="500" fill="#ECEFF1"/>
-                <g id="faces-grid"></g>
-              `
-            },
-            {
-              id: 14,
-              title: "أين القفل الوحيد الذي تُرك مفتوحاً بين هذه الأقفال الذهبية؟",
-              category: "🔒 قوة ملاحظة وتفاصيل",
-              clue: "تفحص حلقة القفل (Shackle)، ستجد قفلاً غير محكم الإغلاق.",
-              target: { x: 380, y: 260, r: 35 },
-              triviaTitle: "تاريخ الأقفال والمفاتيح عبر العصور",
-              triviaFact: "يعود تاريخ أقدم قفل ومفتاح معروف في العالم إلى مصر القديمة وقصر خورساباد في بلاد الرافدين قبل 4000 عام، وكانت مصنوعة من الخشب وتعتمد على دبابيس تتطابق مع أسنان المفتاح، وهو المبدأ نفسه المستخدم في أحدث الأقفال المعدنية اليوم!",
-              svg: `
-                <rect width="600" height="500" fill="#FFF3E0"/>
-                <g id="locks-grid"></g>
-                <text x="300" y="455" font-size="15" font-weight="bold" fill="#E65100" text-anchor="middle">جميع الأقفال محكمة الإغلاق ما عدا قفل وحيد!</text>
-              `
-            },
-            {
-              id: 15,
-              title: "صوّب على نقطة الصفر الدقيقة في مركز الهدف (ضربة معلّم الختامية)",
-              category: "🎯 التحدي الأسطوري الكبير",
-              clue: "إصابة عين الهدف الدقيقة تتطلب ثبات اليد والتركيز بنسبة 100%!",
-              target: { x: 300, y: 240, r: 25 },
-              triviaTitle: "أصل تسمية ضربة معلّم",
-              triviaFact: "يرجع أصل مصطلح 'ضربة معلّم' إلى ورش الحرفيين والصناع التقليديين العرب؛ حيث كان شيخ الصنعة أو 'المعلّم' يتدخل في اللحظة الحرجة ليقوم باللمسة الحاسمة التي تتطلب خبرة السنين وتحوّل القطعة الخام إلى تحفة فنية لا تقدر بثمن.",
-              svg: `
-                <rect width="600" height="500" fill="#212121"/>
-                <circle cx="300" cy="240" r="180" fill="#37474F" stroke="#FFE082" stroke-width="8"/>
-                <circle cx="300" cy="240" r="140" fill="#0288D1"/>
-                <circle cx="300" cy="240" r="100" fill="#D50000"/>
-                <circle cx="300" cy="240" r="60" fill="#FFFFFF"/>
-                <circle cx="300" cy="240" r="25" fill="#FFD600" stroke="#FFF" stroke-width="4"/>
-                <line x1="300" y1="50" x2="300" y2="430" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                <line x1="110" y1="240" x2="490" y2="240" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
-                <text x="300" y="460" font-size="18" font-weight="bold" fill="#FFD600" text-anchor="middle">أثبت مهارتك وأصب نقطة الصفر بدقة 100%!</text>
-              `
+          const STAGES = ''' + stages_js_str + ''';
+
+          const SceneRenderer = {
+            render(stage) {
+              const tx = stage.target.x;
+              const ty = stage.target.y;
+
+              switch (stage.sceneType) {
+                case "map_arabia":
+                  return `
+                    <rect width="600" height="500" fill="#81D4FA"/>
+                    <path d="M 120 70 Q 200 60, 320 80 Q 420 100, 480 180 Q 520 280, 480 380 Q 420 440, 300 450 Q 180 430, 160 360 Q 170 260, 140 180 Z" fill="#FFE082" stroke="#FFA000" stroke-width="4"/>
+                    <path d="M 0 0 L 140 0 L 150 200 L 170 380 L 100 500 L 0 500 Z" fill="#4FC3F7" opacity="0.6"/>
+                    <path d="M 440 120 Q 470 200, 520 240 L 600 220 L 600 0 Z" fill="#4FC3F7" opacity="0.6"/>
+                    <circle cx="${tx}" cy="${ty}" r="7" fill="#D50000" stroke="#FFF" stroke-width="2"/>
+                    <text x="${tx}" y="${ty + 25}" font-size="14" font-weight="900" fill="#37474F" text-anchor="middle">${stage.params.city || 'الهدف'}</text>
+                    <text x="70" y="270" font-size="15" font-weight="bold" fill="#01579B">البحر الأحمر</text>
+                    <text x="500" y="160" font-size="14" font-weight="bold" fill="#01579B">الخليج</text>
+                  `;
+
+                case "anatomy_chest":
+                  return `
+                    <rect width="600" height="500" fill="#E8F5E9"/>
+                    <path d="M 180 80 Q 300 60, 420 80 Q 470 180, 450 440 Q 300 460, 150 440 Q 130 180, 180 80 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
+                    <rect x="260" y="20" width="80" height="70" rx="10" fill="#FFCCBC" stroke="#FF8A65" stroke-width="3"/>
+                    <path d="M 210 160 C 180 180, 180 300, 220 340 C 250 330, 260 250, 250 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
+                    <path d="M 390 160 C 420 180, 420 300, 380 340 C 350 330, 340 250, 350 170 Z" fill="#80DEEA" stroke="#00ACC1" stroke-width="3"/>
+                    <path d="M 230 190 Q 300 200, 370 190 M 220 240 Q 300 250, 380 240 M 230 290 Q 300 300, 370 290" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+                    <path d="M 330 220 C 310 190, 280 220, 330 270 C 380 220, 350 190, 330 220 Z" fill="#D50000" stroke="#B71C1C" stroke-width="3"/>
+                    <text x="300" y="475" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">القفص الصدري البشري</text>
+                  `;
+
+                case "map_egypt":
+                  return `
+                    <rect width="600" height="500" fill="#FFF8E1"/>
+                    <path d="M 0 0 L 600 0 L 600 80 Q 400 90, 310 110 Q 200 90, 0 80 Z" fill="#4FC3F7"/>
+                    <text x="120" y="50" font-size="15" font-weight="bold" fill="#01579B">البحر الأبيض المتوسط</text>
+                    <path d="M 480 130 Q 450 250, 520 400 L 600 400 L 600 130 Z" fill="#4FC3F7"/>
+                    <path d="M 330 500 Q 320 380, 330 320 Q 340 260, 310 210 Q 270 170, 230 110 M 310 210 Q 340 160, 380 110" stroke="#0288D1" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    <polygon points="310,200 295,225 325,225" fill="#FFA000" stroke="#E65100" stroke-width="2"/>
+                    <text x="260" y="222" font-size="14" font-weight="bold" fill="#D84315">الأهرامات</text>
+                    <circle cx="340" cy="215" r="4" fill="#37474F"/>
+                    <text x="365" y="215" font-size="12" fill="#37474F">القاهرة</text>
+                  `;
+
+                case "anatomy_abdomen":
+                  return `
+                    <rect width="600" height="500" fill="#F1F8E9"/>
+                    <ellipse cx="300" cy="300" rx="180" ry="160" fill="#FFE0B2" stroke="#FFB74D" stroke-width="3"/>
+                    <path d="M 210 240 C 210 220, 280 230, 280 280 C 280 320, 210 320, 210 240 Z" fill="#8D6E63" stroke="#5D4037" stroke-width="3"/>
+                    <text x="245" y="280" font-size="14" font-weight="bold" fill="#FFF" text-anchor="middle">الكبد</text>
+                    <path d="M 330 250 C 370 240, 390 280, 370 330 C 340 340, 320 290, 330 250 Z" fill="#EF5350" stroke="#C62828" stroke-width="3"/>
+                    <text x="355" y="295" font-size="14" font-weight="bold" fill="#FFF" text-anchor="middle">المعدة</text>
+                    <path d="M 260 340 Q 300 420, 340 340" stroke="#FFCA28" stroke-width="24" fill="none" stroke-linecap="round"/>
+                    <text x="300" y="380" font-size="13" font-weight="bold" fill="#E65100" text-anchor="middle">الأمعاء</text>
+                  `;
+
+                case "astronomy_solar":
+                  return `
+                    <rect width="600" height="500" fill="#0D1B2A"/>
+                    <circle cx="40" cy="240" r="70" fill="#FFD600" stroke="#FF6F00" stroke-width="4"/>
+                    <circle cx="140" cy="240" r="10" fill="#B0BEC5"/>
+                    <circle cx="190" cy="240" r="14" fill="#FFE082"/>
+                    <circle cx="240" cy="240" r="16" fill="#4FC3F7"/>
+                    <circle cx="280" cy="240" r="12" fill="#FF7043"/>
+                    <circle cx="350" cy="230" r="32" fill="#FFA726" stroke="#FB8C00" stroke-width="2"/>
+                    <ellipse cx="420" cy="230" rx="36" ry="12" fill="none" stroke="#FFE082" stroke-width="4"/>
+                    <circle cx="420" cy="230" r="24" fill="#FFD54F"/>
+                    <circle cx="490" cy="240" r="18" fill="#80DEEA"/>
+                    <circle cx="540" cy="240" r="18" fill="#5C6BC0"/>
+                    <text x="300" y="440" font-size="15" font-weight="bold" fill="#E0E1DD" text-anchor="middle">النظام الشمسي: من عطارد والزهرة حتى عمالقة الغاز</text>
+                  `;
+
+                case "geometry_angles":
+                  return `
+                    <rect width="600" height="500" fill="#F3E5F5"/>
+                    <g transform="translate(80, 140)">
+                      <line x1="0" y1="80" x2="100" y2="80" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                      <line x1="0" y1="80" x2="70" y2="10" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                      <text x="50" y="115" font-size="15" font-weight="bold" fill="#4A148C">أ (45°)</text>
+                    </g>
+                    <g transform="translate(240, 140)">
+                      <line x1="60" y1="80" x2="150" y2="80" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                      <line x1="60" y1="80" x2="10" y2="15" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                      <text x="75" y="115" font-size="15" font-weight="bold" fill="#004D40">ب (120°)</text>
+                    </g>
+                    <g transform="translate(370, 140)">
+                      <line x1="50" y1="80" x2="140" y2="80" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                      <line x1="50" y1="80" x2="50" y2="0" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                      <text x="65" y="115" font-size="15" font-weight="bold" fill="#BF360C">ج (90°)</text>
+                    </g>
+                    <text x="300" y="380" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">أي رأس من هذه الزوايا يطابق المطلوب تماماً؟</text>
+                  `;
+
+                case "geometry_midpoint":
+                  return `
+                    <rect width="600" height="500" fill="#FFF9C4"/>
+                    <rect x="70" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                    <circle cx="85" cy="180" r="14" fill="#BCAAA4"/>
+                    <rect x="500" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                    <circle cx="515" cy="180" r="14" fill="#BCAAA4"/>
+                    <path d="M 85 180 Q 300 ${stage.params.type === 'sag' ? '380' : '260'}, 515 180" stroke="#FF8F00" stroke-width="12" fill="none" stroke-linecap="round"/>
+                    <path d="M 0 420 Q 300 400, 600 420 L 600 500 L 0 500 Z" fill="#C8E6C9"/>
+                    <text x="300" y="450" font-size="16" font-weight="bold" fill="#2E7D32" text-anchor="middle">صوّب على النقطة المنصفة بدقة مليمترية (50%)</text>
+                  `;
+
+                case "map_world":
+                  return `
+                    <rect width="600" height="500" fill="#B3E5FC"/>
+                    <path d="M 120 120 Q 180 100, 220 180 Q 200 240, 140 220 Z" fill="#C8E6C9" stroke="#81C784" stroke-width="2"/>
+                    <path d="M 160 260 Q 230 250, 220 380 Q 170 420, 160 260 Z" fill="#C8E6C9" stroke="#81C784" stroke-width="2"/>
+                    <path d="M 260 110 Q 360 80, 520 120 Q 560 260, 420 320 Q 340 280, 280 200 Z" fill="#FFE082" stroke="#FFB74D" stroke-width="2"/>
+                    <circle cx="${tx}" cy="${ty}" r="7" fill="#D50000" stroke="#FFF" stroke-width="2"/>
+                    <text x="${tx}" y="${ty + 24}" font-size="14" font-weight="900" fill="#D84315" text-anchor="middle">${stage.params.landmark || 'المعلم'}</text>
+                  `;
+
+                case "flag_display":
+                  return `
+                    <rect width="600" height="500" fill="#ECEFF1"/>
+                    <rect x="75" y="100" width="450" height="300" rx="16" fill="#C62828" stroke="#8E0000" stroke-width="6"/>
+                    <polygon points="300,175 322,230 380,230 334,265 352,320 300,285 248,320 266,265 220,230 278,230" fill="none" stroke="#2E7D32" stroke-width="10" stroke-linejoin="round"/>
+                    <circle cx="300" cy="250" r="8" fill="#1B5E20" opacity="0.3"/>
+                    <text x="300" y="440" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">${stage.title}</text>
+                  `;
+
+                case "clock_anomaly":
+                  return `
+                    <rect width="600" height="500" fill="#E8EAF6"/>
+                    <circle cx="300" cy="250" r="160" fill="#FFFFFF" stroke="#3F51B5" stroke-width="12"/>
+                    <circle cx="300" cy="250" r="145" fill="#FAFAFA" stroke="#C5CAE9" stroke-width="2"/>
+                    <circle cx="300" cy="250" r="8" fill="#D50000"/>
+                    <line x1="300" y1="250" x2="300" y2="150" stroke="#212121" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="300" y1="250" x2="380" y2="250" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
+                    <text x="300" y="130" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">12</text>
+                    <text x="420" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">3</text>
+                    <text x="300" y="380" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">6</text>
+                    <text x="180" y="258" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">9</text>
+                    <text x="395" y="325" font-size="24" font-weight="900" fill="#D50000" text-anchor="middle">${stage.params.wrong || '13'}</text>
+                    <text x="205" y="325" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">8</text>
+                    <text x="375" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">2</text>
+                    <text x="225" y="175" font-size="22" font-weight="bold" fill="#303F9F" text-anchor="middle">10</text>
+                    <text x="300" y="460" font-size="15" font-weight="bold" fill="#37474F" text-anchor="middle">دقق النظر في أرقام وجه الساعة!</text>
+                  `;
+
+                default:
+                  return `
+                    <rect width="600" height="500" fill="#212121"/>
+                    <circle cx="300" cy="240" r="180" fill="#37474F" stroke="#FFE082" stroke-width="8"/>
+                    <circle cx="300" cy="240" r="140" fill="#0288D1"/>
+                    <circle cx="300" cy="240" r="100" fill="#D50000"/>
+                    <circle cx="300" cy="240" r="60" fill="#FFFFFF"/>
+                    <circle cx="300" cy="240" r="${stage.target.r}" fill="#FFD600" stroke="#FFF" stroke-width="3"/>
+                    <line x1="300" y1="50" x2="300" y2="430" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    <line x1="110" y1="240" x2="490" y2="240" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    <text x="300" y="465" font-size="18" font-weight="bold" fill="#FFD600" text-anchor="middle">${stage.title}</text>
+                  `;
+              }
             }
-          ];
+          };
 
           const Game = {
             currentStageIdx: 0,
             coins: 250,
             stageProgress: {},
             selectedPreviewIdx: 0,
+            activeWorldTab: 1,
             vibrationEnabled: true,
 
             init() {
@@ -1764,7 +1663,8 @@ jobs:
               Confetti.init();
               this.updateCoinsUI();
               this.bindArenaTouch();
-              this.generateMapVisuals();
+              this.syncActiveWorldTab();
+              this.renderMapNodes();
             },
 
             loadState() {
@@ -1823,9 +1723,24 @@ jobs:
               this.showScreen('menu-screen');
             },
 
+            syncActiveWorldTab() {
+              this.activeWorldTab = Math.min(4, Math.floor(this.currentStageIdx / 50) + 1);
+            },
+
+            switchWorldTab(tabNum) {
+              AudioEngine.playWoodClick();
+              this.activeWorldTab = tabNum;
+              for (let w = 1; w <= 4; w++) {
+                const btn = document.getElementById(`wtab-${w}`);
+                if (btn) btn.classList.toggle('active', w === tabNum);
+              }
+              this.renderMapNodes();
+            },
+
             openMapScreen() {
               AudioEngine.playWoodClick();
-              this.renderMapNodes();
+              this.syncActiveWorldTab();
+              this.switchWorldTab(this.activeWorldTab);
               this.updateCoinsUI();
               const btnNum = document.getElementById('map-btn-stage-num');
               if (btnNum) btnNum.innerText = Math.min(this.currentStageIdx + 1, STAGES.length);
@@ -1845,32 +1760,42 @@ jobs:
               this.showScreen('game-screen');
             },
 
-            generateMapVisuals() {
-              this.renderMapNodes();
-            },
-
             renderMapNodes() {
               const container = document.getElementById('map-nodes-container');
               const svg = document.getElementById('map-road-svg');
+              const banner = document.getElementById('map-world-banner');
               if (!container || !svg) return;
 
               container.innerHTML = '';
-              const total = STAGES.length;
-              let completedCount = 0;
+              const worldStart = (this.activeWorldTab - 1) * 50;
+              const worldEnd = Math.min(STAGES.length, worldStart + 50);
+              const count = worldEnd - worldStart;
+
+              const banners = [
+                "🌴 العالم 1: واحة المعرفة وتاريخ الأجداد (1 - 50)",
+                "🏛️ العالم 2: وادي الاستكشاف والعلوم (51 - 100)",
+                "⚡ العالم 3: مملكة الحكمة والفيزياء (101 - 150)",
+                "🏆 العالم 4: قمة المعلمين والتحدي الأسطوري (151 - 200)"
+              ];
+              if (banner) banner.innerText = banners[this.activeWorldTab - 1];
+
+              let completedTotal = 0;
+              STAGES.forEach(stg => {
+                if (this.stageProgress[stg.id]) completedTotal++;
+              });
+              const progCounter = document.getElementById('map-progress-counter');
+              if (progCounter) progCounter.innerText = `المراحل المنجزة: ${completedTotal} / ${STAGES.length}`;
 
               const nodes = [];
-              const startY = 100;
-              const stepY = 120;
+              const startY = 80;
+              const stepY = 110;
 
-              for (let i = 0; i < total; i++) {
-                const xPct = 50 + 28 * Math.sin(i * 1.1);
+              for (let i = 0; i < count; i++) {
+                const stageIdx = worldStart + i;
+                const xPct = 50 + 28 * Math.sin(i * 1.15);
                 const yPx = startY + i * stepY;
-                nodes.push({ id: i + 1, x: xPct, y: yPx });
-                if (this.stageProgress[i + 1]) completedCount++;
+                nodes.push({ idx: stageIdx, id: stageIdx + 1, x: xPct, y: yPx });
               }
-
-              const progCounter = document.getElementById('map-progress-counter');
-              if (progCounter) progCounter.innerText = `المراحل المنجزة: ${completedCount} / ${total}`;
 
               let pathD = `M ${nodes[0].x * 4.8} ${nodes[0].y}`;
               for (let i = 0; i < nodes.length - 1; i++) {
@@ -1880,18 +1805,18 @@ jobs:
                 pathD += ` C ${p1.x * 4.8} ${midY}, ${p2.x * 4.8} ${midY}, ${p2.x * 4.8} ${p2.y}`;
               }
 
-              svg.setAttribute('viewBox', `0 0 480 ${startY + total * stepY + 60}`);
+              svg.setAttribute('viewBox', `0 0 480 ${startY + count * stepY + 60}`);
               svg.innerHTML = `
                 <path d="${pathD}" fill="none" stroke="#FFA000" stroke-width="26" stroke-linecap="round"/>
                 <path d="${pathD}" fill="none" stroke="#FFF9C4" stroke-width="18" stroke-linecap="round"/>
                 <path d="${pathD}" fill="none" stroke="#FF8F00" stroke-width="3" stroke-dasharray="6 6"/>
               `;
 
-              nodes.forEach((n, idx) => {
+              nodes.forEach(n => {
                 const prog = this.stageProgress[n.id];
                 const isCompleted = !!prog;
-                const isCurrent = (idx === this.currentStageIdx);
-                const isLocked = (!isCompleted && idx > this.currentStageIdx);
+                const isCurrent = (n.idx === this.currentStageIdx);
+                const isLocked = (!isCompleted && n.idx > this.currentStageIdx);
 
                 const nodeDiv = document.createElement('div');
                 nodeDiv.className = `map-node ${isCompleted ? 'completed' : isCurrent ? 'current' : 'locked'}`;
@@ -1911,7 +1836,7 @@ jobs:
                     nodeDiv.classList.add('shake');
                     setTimeout(() => nodeDiv.classList.remove('shake'), 400);
                   } else {
-                    Game.openLevelPreview(idx);
+                    Game.openLevelPreview(n.idx);
                   }
                 };
 
@@ -1926,7 +1851,7 @@ jobs:
               const prog = this.stageProgress[stage.id];
 
               document.getElementById('preview-category').innerText = stage.category;
-              document.getElementById('preview-title').innerText = `المرحلة ${stage.id}: ${stage.title}`;
+              document.getElementById('preview-title').innerText = stage.title;
               document.getElementById('preview-clue').innerText = `💡 إشارة: ${stage.clue}`;
 
               const starsBox = document.getElementById('preview-stars');
@@ -1966,76 +1891,13 @@ jobs:
               }
 
               const svgEl = document.getElementById('stage-svg');
-              svgEl.innerHTML = stage.svg;
-
-              if (stage.id === 13) this.renderFacesGrid();
-              if (stage.id === 14) this.renderLocksGrid();
+              svgEl.innerHTML = SceneRenderer.render(stage);
 
               const pin = document.getElementById('target-pin');
               pin.classList.remove('dropped');
               document.getElementById('radar-hint').style.display = 'none';
 
               this.updateCoinsUI();
-            },
-
-            renderFacesGrid() {
-              const parent = document.getElementById('faces-grid');
-              if (!parent) return;
-              let markup = '';
-              for (let r = 0; r < 4; r++) {
-                for (let c = 0; c < 5; c++) {
-                  const cx = 100 + c * 100;
-                  const cy = 110 + r * 90;
-                  const isSmiling = (r === 2 && c === 3);
-                  if (isSmiling) {
-                    markup += `
-                      <circle cx="${cx}" cy="${cy}" r="32" fill="#FFEB3B" stroke="#F57F17" stroke-width="3"/>
-                      <circle cx="${cx - 10}" cy="${cy - 8}" r="4" fill="#212121"/>
-                      <circle cx="${cx + 10}" cy="${cy - 8}" r="4" fill="#212121"/>
-                      <path d="M ${cx - 16} ${cy + 4} Q ${cx} ${cy + 24}, ${cx + 16} ${cy + 4}" stroke="#D84315" stroke-width="4" fill="none" stroke-linecap="round"/>
-                    `;
-                  } else {
-                    markup += `
-                      <circle cx="${cx}" cy="${cy}" r="32" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
-                      <circle cx="${cx - 10}" cy="${cy - 6}" r="3.5" fill="#212121"/>
-                      <circle cx="${cx + 10}" cy="${cy - 6}" r="3.5" fill="#212121"/>
-                      <path d="M ${cx - 14} ${cy + 14} Q ${cx} ${cy + 2}, ${cx + 14} ${cy + 14}" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    `;
-                  }
-                }
-              }
-              parent.innerHTML = markup;
-            },
-
-            renderLocksGrid() {
-              const parent = document.getElementById('locks-grid');
-              if (!parent) return;
-              let markup = '';
-              for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 4; c++) {
-                  const cx = 120 + c * 120;
-                  const cy = 130 + r * 105;
-                  const isOpen = (r === 1 && c === 2);
-                  if (isOpen) {
-                    markup += `
-                      <g transform="translate(${cx - 25}, ${cy - 30})">
-                        <path d="M 12 12 Q 12 -18, 35 -18 Q 48 -18, 48 -6" fill="none" stroke="#78909C" stroke-width="6" stroke-linecap="round"/>
-                        <rect x="0" y="10" width="50" height="42" rx="8" fill="#FFC107" stroke="#FFA000" stroke-width="3"/>
-                        <circle cx="25" cy="28" r="4" fill="#37474F"/>
-                      </g>
-                    `;
-                  } else {
-                    markup += `
-                      <g transform="translate(${cx - 25}, ${cy - 20})">
-                        <path d="M 10 10 Q 25 -15, 40 10" fill="none" stroke="#78909C" stroke-width="6" stroke-linecap="round"/>
-                        <rect x="0" y="8" width="50" height="42" rx="8" fill="#FFB300" stroke="#FF8F00" stroke-width="3"/>
-                        <circle cx="25" cy="26" r="4" fill="#37474F"/>
-                      </g>
-                    `;
-                  }
-                }
-              }
-              parent.innerHTML = markup;
             },
 
             bindArenaTouch() {
@@ -2081,21 +1943,21 @@ jobs:
               const target = stage.target;
               const dist = Math.hypot(x - target.x, y - target.y);
 
-              if (dist <= target.r * 0.5) {
+              if (dist <= target.r * 0.55) {
                 AudioEngine.playBullseyeFanfare();
                 this.vibrate([80, 50, 120]);
                 Confetti.burst(scrX, scrY);
                 this.showToast("🎯 ضربة معلّم! 100%", "#2E7D32");
                 setTimeout(() => this.showEvaluationModal(100, "🎯 ضربة معلّم! إصابة في الصميم!", 3), 600);
               }
-              else if (dist <= target.r * 1.0) {
+              else if (dist <= target.r * 1.05) {
                 AudioEngine.playBullseyeFanfare();
                 this.vibrate(60);
                 Confetti.burst(scrX, scrY);
                 this.showToast("⭐ ممتاز! قريب جداً من المركز", "#1565C0");
                 setTimeout(() => this.showEvaluationModal(80, "⭐ ممتاز جداً! أداء رائع!", 2), 600);
               }
-              else if (dist <= target.r * 1.5) {
+              else if (dist <= target.r * 1.55) {
                 AudioEngine.playCoinSound();
                 this.vibrate(40);
                 this.showToast("👍 جيد! إصابة مقبولة", "#F57F17");
@@ -2183,8 +2045,8 @@ jobs:
 
               hintEl.style.left = px + 'px';
               hintEl.style.top = py + 'px';
-              hintEl.style.width = '90px';
-              hintEl.style.height = '90px';
+              hintEl.style.width = '85px';
+              hintEl.style.height = '85px';
               hintEl.style.display = 'block';
 
               this.showToast("💡 تم تضييق دائرة البحث!", "#FF8F00");
@@ -2363,7 +2225,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Darbat-Mouallim-APK
+          name: Darbat-Mouallim-200Stages-APK
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
