@@ -39,15 +39,13 @@ jobs:
                   google()
                   mavenCentral()
                   gradlePluginPortal()
-              }
-          }
+              }}
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories {
                   google()
                   mavenCentral()
-              }
-          }
+              }}
           rootProject.name = "DarbatMouallim"
           include ':app'
           EOF
@@ -80,8 +78,8 @@ jobs:
                   applicationId "com.zaytouna.darbatmouallim"
                   minSdk 24
                   targetSdk 34
-                  versionCode 1
-                  versionName "1.0.0"
+                  versionCode 2
+                  versionName "1.1.0"
               }
 
               buildTypes {
@@ -164,15 +162,18 @@ jobs:
           </vector>
           EOF
 
-          # 8. MainActivity.java
+          # 8. MainActivity.java (With Intelligent Back Navigation Bridge)
           cat << 'EOF' > app/src/main/java/com/zaytouna/darbatmouallim/MainActivity.java
           package com.zaytouna.darbatmouallim;
 
           import android.app.Activity;
+          import android.app.AlertDialog;
+          import android.content.DialogInterface;
           import android.os.Bundle;
-          import android.view.View;
           import android.view.Window;
           import android.view.WindowManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.ValueCallback;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
@@ -203,7 +204,8 @@ jobs:
                   webSettings.setLoadWithOverviewMode(true);
                   webSettings.setSupportZoom(false);
 
-                  webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                  webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
+
                   webView.setWebViewClient(new WebViewClient());
                   webView.setWebChromeClient(new WebChromeClient());
 
@@ -212,10 +214,42 @@ jobs:
                   setContentView(webView);
               }
 
+              public class WebAppInterface {
+                  @JavascriptInterface
+                  public void promptExit() {
+                      runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              showExitDialog();
+                          }
+                      });
+                  }
+              }
+
+              private void showExitDialog() {
+                  new AlertDialog.Builder(MainActivity.this)
+                      .setTitle("مغادرة اللعبة")
+                      .setMessage("هل تود حقاً الخروج من لعبة ضربة معلّم؟")
+                      .setPositiveButton("خروج", new DialogInterface.OnClickListener() {
+                          public void onClick(DialogInterface dialog, int which) {
+                              finish();
+                          }
+                      })
+                      .setNegativeButton("متابعة اللعب", null)
+                      .show();
+              }
+
               @Override
               public void onBackPressed() {
-                  if (webView != null && webView.canGoBack()) {
-                      webView.goBack();
+                  if (webView != null) {
+                      webView.evaluateJavascript("window.handleAndroidBack ? window.handleAndroidBack() : 'exit';", new ValueCallback<String>() {
+                          @Override
+                          public void onReceiveValue(String value) {
+                              if ("\"exit\"".equals(value) || "\"unhandled\"".equals(value)) {
+                                  showExitDialog();
+                              }
+                          }
+                      });
                   } else {
                       super.onBackPressed();
                   }
@@ -231,7 +265,7 @@ jobs:
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-            <title>ضربة معلم - لعبة الألغاز والتصويب</title>
+            <title>ضربة معلم - لعبة الألغاز والتصويب والمعلومات</title>
             <style>
               :root {
                 --primary-orange: #FF6F00;
@@ -310,7 +344,7 @@ jobs:
 
               .glossy-btn {
                 position: relative;
-                border: 3px solid rgba(255,255,255,0.8);
+                border: 3px solid rgba(255,255,255,0.85);
                 border-radius: 24px;
                 font-weight: 800;
                 cursor: pointer;
@@ -371,13 +405,13 @@ jobs:
               }
 
               .circle-btn {
-                width: 46px;
-                height: 46px;
+                width: 44px;
+                height: 44px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.3rem;
+                font-size: 1.25rem;
                 border: 3px solid #FFF8E1;
                 background: linear-gradient(180deg, #FFE082 0%, #FFA000 100%);
                 box-shadow: 0 5px 0 #B78103, 0 6px 12px rgba(0,0,0,0.25);
@@ -405,7 +439,7 @@ jobs:
                 border-radius: 36px;
                 padding: 32px 24px;
                 box-shadow: inset 0 3px 6px rgba(255,255,255,0.6), 0 16px 36px rgba(0,0,0,0.35);
-                width: 85%;
+                width: 88%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -475,7 +509,7 @@ jobs:
                 position: relative;
               }
               .play-giant-btn {
-                width: 240px;
+                width: 250px;
                 height: 72px;
                 font-size: 1.6rem;
                 border-radius: 36px;
@@ -489,7 +523,7 @@ jobs:
                 display: flex;
                 gap: 12px;
                 width: 100%;
-                max-width: 320px;
+                max-width: 330px;
               }
               .sub-btn {
                 flex: 1;
@@ -504,10 +538,149 @@ jobs:
                 padding-top: 10px;
               }
 
+              #map-screen {
+                background: linear-gradient(180deg, #E65100 0%, #FF8F00 30%, #FFA000 70%, #FFB300 100%);
+              }
+              .map-header {
+                padding: 12px 14px 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: rgba(0,0,0,0.15);
+                border-bottom: 2px solid rgba(255,255,255,0.2);
+                z-index: 30;
+              }
+              .map-progress-pill {
+                background: linear-gradient(180deg, #FFFFFF 0%, #FFF9C4 100%);
+                border: 2px solid #FFE082;
+                border-radius: 20px;
+                padding: 4px 14px;
+                font-size: 0.85rem;
+                font-weight: 800;
+                color: #E65100;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+              }
+              .map-scroll-area {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                position: relative;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 90px;
+              }
+              .map-scroll-area::-webkit-scrollbar {
+                width: 6px;
+              }
+              .map-scroll-area::-webkit-scrollbar-thumb {
+                background: rgba(255,255,255,0.4);
+                border-radius: 10px;
+              }
+              .map-content-wrapper {
+                position: relative;
+                width: 100%;
+                min-height: 1950px;
+              }
+              .map-road-svg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+              }
+              .map-zone-banner {
+                position: absolute;
+                left: 5%;
+                width: 90%;
+                background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,249,196,0.92) 100%);
+                border: 2.5px solid #FFD54F;
+                border-radius: 16px;
+                padding: 8px 14px;
+                font-size: 0.95rem;
+                font-weight: 900;
+                color: #D84315;
+                text-align: center;
+                box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+                z-index: 2;
+              }
+              .map-node {
+                position: absolute;
+                width: 64px;
+                height: 64px;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border: 3.5px solid white;
+                font-weight: 900;
+                font-size: 1.25rem;
+                color: white;
+                cursor: pointer;
+                z-index: 10;
+                box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 16px rgba(0,0,0,0.3);
+                transition: transform 0.15s ease;
+              }
+              .map-node:active {
+                transform: translate(-50%, -46%) scale(0.96);
+              }
+              .map-node.completed {
+                background: linear-gradient(180deg, #76FF03 0%, #43A047 100%);
+                border-color: #E8F5E9;
+              }
+              .map-node.current {
+                background: linear-gradient(180deg, #FFB300 0%, #E65100 100%);
+                border-color: #FFF9C4;
+                animation: pulse-ring 2s infinite ease-in-out;
+              }
+              .map-node.locked {
+                background: #78909C;
+                border-color: #CFD8DC;
+                color: #ECEFF1;
+                cursor: not-allowed;
+                box-shadow: 0 5px 0 #455A64;
+              }
+              .map-node-stars {
+                position: absolute;
+                bottom: -18px;
+                font-size: 0.7rem;
+                white-space: nowrap;
+                filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+              }
+              .map-current-pin {
+                position: absolute;
+                top: -34px;
+                background: #D50000;
+                color: white;
+                font-size: 0.72rem;
+                font-weight: 800;
+                padding: 2px 8px;
+                border-radius: 12px;
+                border: 1.5px solid white;
+                box-shadow: 0 3px 6px rgba(0,0,0,0.35);
+                animation: float-tag 1.5s infinite ease-in-out;
+                white-space: nowrap;
+              }
+              @keyframes float-tag {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-4px); }
+              }
+              .map-bottom-bar {
+                position: absolute;
+                bottom: 12px;
+                left: 14px;
+                right: 14px;
+                z-index: 30;
+                display: flex;
+                justify-content: center;
+              }
+
               #game-screen {
                 display: none;
                 flex-direction: column;
-                padding: 12px 14px;
+                padding: 10px 14px;
                 height: 100%;
               }
               .game-top-bar {
@@ -522,20 +695,20 @@ jobs:
                 border: 3px solid #E1F5FE;
                 box-shadow: 0 4px 0 #01579B, 0 6px 12px rgba(0,0,0,0.25);
                 border-radius: 24px;
-                padding: 6px 18px;
+                padding: 5px 16px;
                 font-weight: 900;
-                font-size: 1.1rem;
+                font-size: 1.05rem;
                 text-shadow: 0 2px 3px rgba(0,0,0,0.3);
               }
               
               .question-ribbon-card {
                 position: relative;
                 background: linear-gradient(180deg, #FFFFFF 0%, #FFF8E1 100%);
-                border: 3.5px solid #FFE082;
+                border: 3px solid #FFE082;
                 border-radius: 20px;
-                padding: 12px 16px;
-                margin-bottom: 10px;
-                box-shadow: inset 0 2px 4px rgba(255,255,255,0.9), 0 6px 0 #FFA000, 0 10px 18px rgba(0,0,0,0.25);
+                padding: 10px 14px;
+                margin-bottom: 8px;
+                box-shadow: inset 0 2px 4px rgba(255,255,255,0.9), 0 5px 0 #FFA000, 0 10px 18px rgba(0,0,0,0.25);
                 text-align: center;
               }
               .category-tag {
@@ -544,15 +717,22 @@ jobs:
                 color: #FFFFFF;
                 font-size: 0.75rem;
                 font-weight: 800;
-                padding: 3px 12px;
+                padding: 2px 10px;
                 border-radius: 12px;
                 margin-bottom: 4px;
               }
               .question-text {
-                font-size: 1.25rem;
+                font-size: 1.18rem;
                 font-weight: 900;
                 color: #3E2723;
                 line-height: 1.35;
+                margin-bottom: 4px;
+              }
+              .question-clue {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #795548;
+                opacity: 0.95;
               }
               .trick-clickable {
                 color: #D84315;
@@ -564,7 +744,7 @@ jobs:
                 flex: 1;
                 position: relative;
                 background: #FFFFFF;
-                border-radius: 24px;
+                border-radius: 22px;
                 border: 4px solid #FFE082;
                 box-shadow: inset 0 4px 8px rgba(0,0,0,0.1), 0 8px 0 #FFA000, 0 14px 24px rgba(0,0,0,0.3);
                 overflow: hidden;
@@ -605,22 +785,18 @@ jobs:
                 z-index: 40;
                 display: none;
               }
-              @keyframes radar-pulse {
-                0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
-                100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.3; }
-              }
 
               #feedback-toast {
                 position: absolute;
-                top: 20px;
+                top: 16px;
                 left: 50%;
                 transform: translateX(-50%) translateY(-30px);
                 opacity: 0;
                 background: #D50000;
                 color: white;
                 font-weight: 900;
-                font-size: 1.1rem;
-                padding: 8px 24px;
+                font-size: 1.05rem;
+                padding: 8px 22px;
                 border-radius: 20px;
                 border: 3px solid #FF8A80;
                 box-shadow: 0 6px 16px rgba(0,0,0,0.4);
@@ -642,15 +818,15 @@ jobs:
               }
               .help-btn {
                 flex: 1;
-                padding: 10px 4px;
-                font-size: 0.95rem;
+                padding: 8px 4px;
+                font-size: 0.92rem;
                 border-radius: 18px;
                 display: flex;
                 flex-direction: column;
                 gap: 2px;
               }
               .help-btn small {
-                font-size: 0.72rem;
+                font-size: 0.7rem;
                 opacity: 0.9;
               }
 
@@ -660,7 +836,7 @@ jobs:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.65);
+                background: rgba(0,0,0,0.68);
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
                 display: none;
@@ -674,11 +850,13 @@ jobs:
               }
               .clay-modal {
                 width: 100%;
-                max-width: 380px;
+                max-width: 400px;
+                max-height: 90vh;
+                overflow-y: auto;
                 background: linear-gradient(180deg, #FFFDE7 0%, #FFF8E1 100%);
                 border: 4px solid #FFE082;
                 border-radius: 32px;
-                padding: 24px 20px;
+                padding: 22px 18px;
                 box-shadow: inset 0 3px 6px rgba(255,255,255,0.8), 0 16px 36px rgba(0,0,0,0.45);
                 display: flex;
                 flex-direction: column;
@@ -703,21 +881,50 @@ jobs:
                 cursor: pointer;
                 border: 2px solid white;
                 box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+                z-index: 10;
               }
               .modal-title {
-                font-size: 1.6rem;
+                font-size: 1.55rem;
                 font-weight: 900;
                 color: #E65100;
-                margin-bottom: 12px;
+                margin-bottom: 10px;
+              }
+
+              .trivia-card-box {
+                width: 100%;
+                background: linear-gradient(180deg, #FFFFFF 0%, #FFFDE7 100%);
+                border: 2px solid #FFD54F;
+                border-radius: 20px;
+                padding: 14px 14px;
+                margin: 12px 0 16px;
+                text-align: right;
+                box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 10px rgba(0,0,0,0.1);
+              }
+              .trivia-header-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #D84315;
+                font-weight: 900;
+                font-size: 1rem;
+                margin-bottom: 6px;
+                border-bottom: 1px dashed #FFE082;
+                padding-bottom: 4px;
+              }
+              .trivia-text-content {
+                font-size: 0.88rem;
+                font-weight: 600;
+                line-height: 1.55;
+                color: #455A64;
               }
 
               .victory-stars-box {
                 display: flex;
                 gap: 12px;
-                margin: 14px 0;
+                margin: 8px 0;
               }
               .star-icon {
-                font-size: 2.8rem;
+                font-size: 2.6rem;
                 filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
                 transform: scale(0);
                 transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -731,64 +938,20 @@ jobs:
                 transform: scale(0.9);
               }
               .victory-eval-text {
-                font-size: 1.4rem;
+                font-size: 1.35rem;
                 font-weight: 900;
                 color: #2E7D32;
-                margin-bottom: 6px;
+                margin-bottom: 4px;
               }
               .victory-reward-badge {
                 background: linear-gradient(180deg, #FFE082 0%, #FFA000 100%);
-                padding: 8px 24px;
+                padding: 6px 20px;
                 border-radius: 20px;
                 font-weight: 900;
-                font-size: 1.15rem;
+                font-size: 1.1rem;
                 color: #4E342E;
-                margin-bottom: 20px;
+                margin-bottom: 6px;
                 border: 2px solid white;
-              }
-
-              .stages-scroll-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 12px;
-                width: 100%;
-                max-height: 340px;
-                overflow-y: auto;
-                padding: 10px 4px;
-                margin: 10px 0;
-              }
-              .stage-node-btn {
-                aspect-ratio: 1/1;
-                border-radius: 20px;
-                border: 3px solid white;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                font-weight: 900;
-                font-size: 1.15rem;
-                cursor: pointer;
-                position: relative;
-                box-shadow: 0 5px 0 rgba(0,0,0,0.2);
-              }
-              .stage-node-btn.completed {
-                background: linear-gradient(180deg, #76FF03 0%, #43A047 100%);
-                color: white;
-              }
-              .stage-node-btn.current {
-                background: linear-gradient(180deg, #FFB300 0%, #E65100 100%);
-                color: white;
-                animation: pulse-ring 2s infinite ease-in-out;
-              }
-              .stage-node-btn.locked {
-                background: #B0BEC5;
-                color: #ECEFF1;
-                cursor: not-allowed;
-                box-shadow: 0 4px 0 #78909C;
-              }
-              .stage-node-stars {
-                font-size: 0.65rem;
-                margin-top: 2px;
               }
 
               .settings-row {
@@ -860,7 +1023,7 @@ jobs:
                   <line x1="2" y1="50" x2="98" y2="50" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
                 </svg>
                 <h1 class="game-main-title">ضربة معلّم</h1>
-                <p class="game-subtitle">ثقافة • دقة ملاحظة • تصويب باللمس</p>
+                <p class="game-subtitle">ثقافة ومعلومات • دقة ملاحظة • تصويب باللمس</p>
                 <button class="glossy-btn btn-green splash-start-btn" onclick="Game.startGameFromSplash()">
                   🎯 العـب الآن 🎯
                 </button>
@@ -893,13 +1056,13 @@ jobs:
                   </defs>
                 </svg>
 
-                <button id="main-play-btn" class="glossy-btn btn-green play-giant-btn" onclick="Game.playCurrentStage()">
-                  الـعـب (مرحلة 1) 🎯
+                <button id="main-play-btn" class="glossy-btn btn-green play-giant-btn" onclick="Game.openMapScreen()">
+                  خريطة المراحل 🗺️
                 </button>
 
                 <div class="menu-sub-actions">
-                  <button class="glossy-btn btn-blue sub-btn" onclick="Game.openMapModal()">
-                    🗺️ الخريطة
+                  <button class="glossy-btn btn-blue sub-btn" onclick="Game.playCurrentStageDirectly()">
+                    🎯 العب (مرحلة <span id="quick-stage-num">1</span>)
                   </button>
                   <button class="glossy-btn btn-orange sub-btn" onclick="Game.claimDailyGift()">
                     🎁 هدية يومية
@@ -914,10 +1077,41 @@ jobs:
               </div>
             </div>
 
-            <!-- 3. GAME SCREEN -->
+            <!-- 3. MAP SCREEN (Dedicated Winding Adventure Road) -->
+            <div id="map-screen" class="screen">
+              <div class="map-header">
+                <div class="circle-btn" onclick="Game.goToMenu()">←</div>
+                <div class="map-progress-pill" id="map-progress-counter">المراحل: 0 / 15</div>
+                <div class="gold-badge" onclick="Game.openCoinsModal()">
+                  <span>💰</span>
+                  <span id="map-coins-val">250</span>
+                  <span style="font-size: 1.1rem; color: #E65100;">+</span>
+                </div>
+              </div>
+
+              <div class="map-scroll-area" id="map-scroll-container">
+                <div class="map-content-wrapper" id="map-content-wrapper">
+                  <svg class="map-road-svg" id="map-road-svg"></svg>
+                  
+                  <div class="map-zone-banner" style="top: 20px;">🌴 المنطقة الأولى: واحة المعرفة وتاريخ الأجداد</div>
+                  <div class="map-zone-banner" style="top: 660px;">🏛️ المنطقة الثانية: وادي المعالم والتشريح العلمي</div>
+                  <div class="map-zone-banner" style="top: 1300px;">⚡ المنطقة الثالثة: قمة الفكر والفيزياء والتحدي الأسطوري</div>
+
+                  <div id="map-nodes-container"></div>
+                </div>
+              </div>
+
+              <div class="map-bottom-bar">
+                <button class="glossy-btn btn-green" style="width: 90%; padding: 12px 0; font-size: 1.25rem;" onclick="Game.playCurrentStageDirectly()">
+                  🎯 العب المرحلة الحالية (<span id="map-btn-stage-num">1</span>)
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. GAME SCREEN -->
             <div id="game-screen" class="screen">
               <div class="game-top-bar">
-                <div class="circle-btn" onclick="Game.goToMenu()">⌂</div>
+                <div class="circle-btn" onclick="Game.openMapScreen()">🗺️</div>
                 <div class="stage-pill" id="game-stage-title">مرحلة 1</div>
                 <div class="gold-badge" onclick="Game.openCoinsModal()">
                   <span>💰</span>
@@ -927,8 +1121,9 @@ jobs:
               </div>
 
               <div class="question-ribbon-card">
-                <span class="category-tag" id="game-category-tag">جغرافيا</span>
+                <span class="category-tag" id="game-category-tag">جغرافيا وتاريخ</span>
                 <div class="question-text" id="game-question-text">أين تقع مكة المكرمة في شبه الجزيرة؟</div>
+                <div class="question-clue" id="game-question-clue">صوّب غرب شبه الجزيرة بالقرب من ساحل البحر الأحمر.</div>
               </div>
 
               <div class="canvas-arena" id="canvas-arena">
@@ -962,10 +1157,10 @@ jobs:
               </div>
             </div>
 
-            <!-- MODALS -->
+            <!-- 5. MODALS -->
             <div id="victory-modal" class="modal-overlay">
               <div class="clay-modal">
-                <h2 class="modal-title">تهانينا!</h2>
+                <h2 class="modal-title">إصابة موفّقة!</h2>
                 <div class="victory-stars-box">
                   <span id="star-1" class="star-icon">⭐</span>
                   <span id="star-2" class="star-icon">⭐</span>
@@ -973,17 +1168,33 @@ jobs:
                 </div>
                 <div id="victory-eval" class="victory-eval-text">🎯 ضربة معلّم! في الصميم!</div>
                 <div class="victory-reward-badge" id="victory-reward-text">كسبت +50 💰</div>
+
+                <div class="trivia-card-box">
+                  <div class="trivia-header-row">
+                    <span>💡</span>
+                    <span id="trivia-card-title">معلومة ضربة معلّم</span>
+                  </div>
+                  <p class="trivia-text-content" id="trivia-card-text">
+                    هنا تظهر المعلومة الثقافية أو التاريخية أو العلمية الموثقة حول اللغز!
+                  </p>
+                </div>
+
                 <button class="glossy-btn btn-green" style="width: 100%; padding: 14px 0; font-size: 1.25rem;" onclick="Game.nextStage()">
                   المرحلة التالية ⏩
                 </button>
               </div>
             </div>
 
-            <div id="map-modal" class="modal-overlay">
+            <div id="level-preview-modal" class="modal-overlay">
               <div class="clay-modal">
-                <div class="modal-close-icon" onclick="Game.closeModal('map-modal')">✕</div>
-                <h2 class="modal-title">خريطة المراحل</h2>
-                <div class="stages-scroll-grid" id="stages-grid-container"></div>
+                <div class="modal-close-icon" onclick="Game.closeModal('level-preview-modal')">✕</div>
+                <span class="category-tag" id="preview-category">جغرافيا</span>
+                <h2 class="modal-title" id="preview-title" style="margin-top: 6px;">مرحلة 1</h2>
+                <p id="preview-clue" style="color: #5D4037; font-weight: 700; font-size: 0.95rem; margin-bottom: 12px;"></p>
+                <div class="victory-stars-box" id="preview-stars" style="margin-bottom: 16px;"></div>
+                <button class="glossy-btn btn-green" style="width: 100%; padding: 14px 0; font-size: 1.25rem;" onclick="Game.startSelectedStage()">
+                  ابدأ التحدي 🎯
+                </button>
               </div>
             </div>
 
@@ -1009,7 +1220,7 @@ jobs:
                   <span style="color:#C62828;">إعادة تصفير التقدم 🔄</span>
                   <span>⚠️</span>
                 </div>
-                <p style="margin-top: 16px; font-size: 0.8rem; color: #78909C;">ضربة معلّم - إصدار 1.0.0 © زيتونة</p>
+                <p style="margin-top: 16px; font-size: 0.8rem; color: #78909C;">ضربة معلّم - موسوعة الألغاز العربية 1.1.0 © زيتونة</p>
               </div>
             </div>
 
@@ -1032,13 +1243,13 @@ jobs:
                 <div style="font-size: 3.5rem;">🏆</div>
                 <h2 class="modal-title">ختام أسطوري!</h2>
                 <p style="font-weight: 800; color: #2E7D32; font-size: 1.15rem; margin-bottom: 8px;">
-                  لقد أتممت جميع مراحل اللعبة بنجاح باهر!
+                  لقد أتممت جميع مراحل خريطة ضربة معلّم بنجاح باهر!
                 </p>
                 <p style="color: #455A64; font-size: 0.95rem; margin-bottom: 20px;">
-                  أنت أستاذ ومعلم في دقة الملاحظة وسرعة البديهة. ترقبوا المزيد من المراحل في التحديث القادم!
+                  أنت أستاذ ومعلم في دقة الملاحظة ورصيد المعلومات الثقافية. ترقبوا المزيد من المراحل والمناطق في التحديث القادم!
                 </p>
-                <button class="glossy-btn btn-green" style="width:100%; padding:14px 0;" onclick="Game.goToMenu(); Game.closeModal('finale-modal');">
-                  العودة للقائمة الرئيسية ⌂
+                <button class="glossy-btn btn-green" style="width:100%; padding:14px 0;" onclick="Game.openMapScreen(); Game.closeModal('finale-modal');">
+                  العودة لخريطة المراحل 🗺️
                 </button>
               </div>
             </div>
@@ -1243,8 +1454,11 @@ jobs:
             {
               id: 1,
               title: "أين تقع مكة المكرمة في شبه الجزيرة العربية؟",
-              category: "جغرافيا وخرائط",
-              target: { x: 230, y: 300, r: 35 },
+              category: "🕌 جغرافيا وتاريخ إسلامي",
+              clue: "صوّب غرب شبه الجزيرة بالقرب من ساحل البحر الأحمر في منطقة الحجاز.",
+              target: { x: 230, y: 300, r: 36 },
+              triviaTitle: "عاصمة القلوب - مكة المكرمة",
+              triviaFact: "تقع مكة المكرمة على خط طول 39.8° وخط عرض 21.4° بارتفاع 277 متراً عن سطح البحر. تحتضن المسجد الحرام والكعبة المشرفة وبئر زمزم المبارك الذي يتدفق ماؤه العذب دون انقطاع منذ أكثر من 4000 عام منذ عهد نبي الله إسماعيل وأمه هاجر عليهما السلام.",
               svg: `
                 <rect width="600" height="500" fill="#81D4FA"/>
                 <path d="M 120 70 Q 200 60, 320 80 Q 420 100, 480 180 Q 520 280, 480 380 Q 420 440, 300 450 Q 180 430, 160 360 Q 170 260, 140 180 Z" fill="#FFE082" stroke="#FFA000" stroke-width="4"/>
@@ -1264,8 +1478,11 @@ jobs:
             {
               id: 2,
               title: "حدد موقع عضلة القلب في الصدر البشري",
-              category: "علوم وتشريح",
-              target: { x: 330, y: 240, r: 35 },
+              category: "🫀 علوم وتشريح الإنسان",
+              clue: "يقع القلب في التجويف الصدري بين الرئتين، مائلاً قليلاً نحو اليسار.",
+              target: { x: 330, y: 240, r: 36 },
+              triviaTitle: "معجزة المضخة الحيوية",
+              triviaFact: "عضلة القلب بحجم قبضة اليد وتزن نحو 300 غرام فقط، لكنها تنبض حوالي 100,000 مرة في اليوم وتضخ أكثر من 7,500 لتر من الدم يومياً عبر شبكة أوعية دموية يتجاوز طولها 96,000 كيلومتر، أي ما يكفي للدوران حول الأرض مرتين ونصف!",
               svg: `
                 <rect width="600" height="500" fill="#E8F5E9"/>
                 <path d="M 180 80 Q 300 60, 420 80 Q 470 180, 450 440 Q 300 460, 150 440 Q 130 180, 180 80 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
@@ -1279,78 +1496,12 @@ jobs:
             },
             {
               id: 3,
-              title: "حدد منتصف الحبل المشدود تماماً (50%)",
-              category: "تقدير وفيزياء",
-              target: { x: 300, y: 250, r: 30 },
-              svg: `
-                <rect width="600" height="500" fill="#FFF9C4"/>
-                <rect x="70" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
-                <circle cx="85" cy="180" r="14" fill="#BCAAA4"/>
-                <rect x="500" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
-                <circle cx="515" cy="180" r="14" fill="#BCAAA4"/>
-                <path d="M 85 180 Q 300 320, 515 180" stroke="#FF8F00" stroke-width="12" fill="none" stroke-linecap="round"/>
-                <path d="M 0 420 Q 300 400, 600 420 L 600 500 L 0 500 Z" fill="#C8E6C9"/>
-                <text x="300" y="450" font-size="16" font-weight="bold" fill="#2E7D32" text-anchor="middle">صوّب على النقطة المنصفة بدقة مليمترية</text>
-              `
-            },
-            {
-              id: 4,
-              title: "اعثر على الوجه المبتسم وسط الوجوه العابسة",
-              category: "قوة ملاحظة",
-              target: { x: 420, y: 320, r: 32 },
-              svg: `
-                <rect width="600" height="500" fill="#ECEFF1"/>
-                <g id="faces-grid"></g>
-              `
-            },
-            {
-              id: 5,
-              title: "أين تقع 'الكعبة المشرفة'؟",
-              category: "تفكير جانبي وخدع",
-              target: { x: 300, y: 280, r: 40 },
-              trickTarget: true,
-              svg: `
-                <rect width="600" height="500" fill="#E0F7FA"/>
-                <ellipse cx="300" cy="340" rx="240" ry="110" fill="#FFFFFF" stroke="#B2EBF2" stroke-width="4"/>
-                <polygon points="230,230 300,190 370,230 300,270" fill="#424242"/>
-                <polygon points="230,230 300,270 300,350 230,310" fill="#212121"/>
-                <polygon points="370,230 300,270 300,350 370,310" fill="#111111"/>
-                <polygon points="230,250 300,290 300,305 230,265" fill="#FFD700"/>
-                <polygon points="370,250 300,290 300,305 370,265" fill="#FFC107"/>
-                <rect x="250" y="275" width="25" height="35" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
-                <text x="300" y="460" font-size="16" font-weight="bold" fill="#00838F" text-anchor="middle">فكر بذكاء... الحل قد يكون في أكثر من موضع!</text>
-              `
-            },
-            {
-              id: 6,
-              title: "حدد الزاوية القائمة تماماً (90 درجة)",
-              category: "رياضيات وتقدير",
-              target: { x: 420, y: 220, r: 35 },
-              svg: `
-                <rect width="600" height="500" fill="#F3E5F5"/>
-                <g transform="translate(80, 140)">
-                  <line x1="0" y1="80" x2="100" y2="80" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="0" y1="80" x2="70" y2="10" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
-                  <text x="50" y="115" font-size="15" font-weight="bold" fill="#4A148C">أ</text>
-                </g>
-                <g transform="translate(240, 140)">
-                  <line x1="60" y1="80" x2="150" y2="80" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="60" y1="80" x2="10" y2="15" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
-                  <text x="75" y="115" font-size="15" font-weight="bold" fill="#004D40">ب</text>
-                </g>
-                <g transform="translate(370, 140)">
-                  <line x1="50" y1="80" x2="140" y2="80" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
-                  <line x1="50" y1="80" x2="50" y2="0" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
-                  <text x="65" y="115" font-size="15" font-weight="bold" fill="#BF360C">ج</text>
-                </g>
-                <text x="300" y="380" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">أي رأس من هذه الزوايا يشكل تعامداً مثالياً؟</text>
-              `
-            },
-            {
-              id: 7,
               title: "حدد موقع أهرامات الجيزة بالقرب من دلتا النيل",
-              category: "جغرافيا ومعالم",
+              category: "🏛️ معالم وآثار تاريخية",
+              clue: "تقع الأهرامات على الضفة الغربية لنهر النيل جنوب غرب القاهرة مباشرة.",
               target: { x: 310, y: 215, r: 35 },
+              triviaTitle: "عجيبة العالم الباقية - الأهرامات",
+              triviaFact: "بُني الهرم الأكبر (خوفو) حوالي عام 2560 قبل الميلاد، وظل أطول بناء صنعه الإنسان لمدة 3800 عام بارتفاع أصلي 146.6م. يتكون من 2.3 مليون كتلة حجرية تزن نحو 6 ملايين طن تم رصّها بدقة هندسية وفلكية مذهلة دون آلات حديثة.",
               svg: `
                 <rect width="600" height="500" fill="#FFF8E1"/>
                 <path d="M 0 0 L 600 0 L 600 80 Q 400 90, 310 110 Q 200 90, 0 80 Z" fill="#4FC3F7"/>
@@ -1364,10 +1515,113 @@ jobs:
               `
             },
             {
+              id: 4,
+              title: "حدد مركز النجمة الخماسية في علم المغرب",
+              category: "🇲🇦 ثقافة وأعلام وطنية",
+              clue: "صوّب بدقة على النواة المركزية للنجمة الخماسية الخضراء المتشابكة.",
+              target: { x: 300, y: 250, r: 35 },
+              triviaTitle: "دلالات راية المملكة المغربية",
+              triviaFact: "اعتُمدت النجمة الخماسية الخضراء (الخاتم السليماني) رسمياً عام 1915 في عهد السلطان مولاي يوسف. ترمز الزوايا الخمس لأركان الإسلام الخمسة، بينما يرمز اللون الأخضر للنماء والسلام، وخلفية العلم الحمراء ترمز للشجاعة والأصالة.",
+              svg: `
+                <rect width="600" height="500" fill="#ECEFF1"/>
+                <rect x="75" y="100" width="450" height="300" rx="16" fill="#C62828" stroke="#8E0000" stroke-width="6"/>
+                <polygon points="300,175 322,230 380,230 334,265 352,320 300,285 248,320 266,265 220,230 278,230" fill="none" stroke="#2E7D32" stroke-width="10" stroke-linejoin="round"/>
+                <circle cx="300" cy="250" r="8" fill="#1B5E20" opacity="0.3"/>
+                <text x="300" y="440" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">العلم الوطني المغربي الشريف</text>
+              `
+            },
+            {
+              id: 5,
+              title: "حدد منتصف الحبل المشدود تماماً (50%)",
+              category: "📐 تقدير وأبعاد هندسية",
+              clue: "قدّر المسافة المتساوية بدقة مليمترية بين نقطتي التثبيت في الطرفين.",
+              target: { x: 300, y: 250, r: 30 },
+              triviaTitle: "دقة التقدير البصري ونقطة الوسط",
+              triviaFact: "تُعرف هذه النقطة في الهندسة بـ 'نقطة الوسط' (Midpoint). وقد طوّر الإنسان القديم مهارة التقدير بالعين المجردة لبناء الجسور وتشييد السفن الشراعية قبل آلاف السنين من اختراع أجهزة الليزر والمساطر الدقيقة.",
+              svg: `
+                <rect width="600" height="500" fill="#FFF9C4"/>
+                <rect x="70" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                <circle cx="85" cy="180" r="14" fill="#BCAAA4"/>
+                <rect x="500" y="160" width="30" height="240" rx="8" fill="#8D6E63" stroke="#4E342E" stroke-width="3"/>
+                <circle cx="515" cy="180" r="14" fill="#BCAAA4"/>
+                <path d="M 85 180 Q 300 320, 515 180" stroke="#FF8F00" stroke-width="12" fill="none" stroke-linecap="round"/>
+                <path d="M 0 420 Q 300 400, 600 420 L 600 500 L 0 500 Z" fill="#C8E6C9"/>
+                <text x="300" y="450" font-size="16" font-weight="bold" fill="#2E7D32" text-anchor="middle">صوّب على النقطة المنصفة بدقة مليمترية</text>
+              `
+            },
+            {
+              id: 6,
+              title: "أين يقع مضيق هرمز بين الخليج العربي وبحر عمان؟",
+              category: "🌍 جغرافيا وممرات استراتيجية",
+              clue: "الممر المائي الضيق في شمال سلطنة عُمان وجنوب إيران الذي يربط مياه الخليج بالمحيط.",
+              target: { x: 480, y: 190, r: 35 },
+              triviaTitle: "شريان الطاقة العالمي - مضيق هرمز",
+              triviaFact: "يُعد مضيق هرمز أهم ممر مائي لتجارة النفط في العالم؛ فعرضه عند أضيق نقطة يبلغ 39 كم فقط، ويمر عبره يومياً قرابة 21 مليون برميل نفط، ما يمثل خُمس (20%) استهلاك العالم اليومي من البترول السائل.",
+              svg: `
+                <rect width="600" height="500" fill="#E1F5FE"/>
+                <path d="M 400 240 Q 480 200, 480 180 Q 460 210, 410 290 Z" fill="#FFE082" stroke="#FFA000" stroke-width="3"/>
+                <path d="M 320 60 Q 480 140, 560 160 L 600 60 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="3"/>
+                <path d="M 100 120 Q 300 160, 470 180 Q 520 220, 580 320" stroke="#0288D1" stroke-width="40" fill="none" opacity="0.6"/>
+                <text x="240" y="160" font-size="16" font-weight="bold" fill="#01579B">الخليج العربي</text>
+                <text x="520" y="300" font-size="16" font-weight="bold" fill="#01579B">بحر عُمان</text>
+                <text x="440" y="100" font-size="14" fill="#37474F">إيران</text>
+                <text x="410" y="270" font-size="13" fill="#37474F">شبه جزيرة مسندم</text>
+              `
+            },
+            {
+              id: 7,
+              title: "حدد موقع قوقعة السمع داخل الأذن الداخلية",
+              category: "👂 تشريح الحواس والسمع",
+              clue: "العضو الحلزوني الصغير الذي يشبه صدفة الحلزون في أعماق الأذن.",
+              target: { x: 340, y: 240, r: 34 },
+              triviaTitle: "معجزة السمع - القوقعة",
+              triviaFact: "القوقعة (Cochlea) أنبوب حلزوني دقيق بطول 3 سنتيمترات ملفوف حول نفسه مرتين ونصف. يحتوي على 16,000 خلية شعرية فائقة الحساسية تحول الذبذبات الميكانيكية إلى نبضات عصبية يفسرها المخ كلغات وأصوات وموسيقى.",
+              svg: `
+                <rect width="600" height="500" fill="#FCE4EC"/>
+                <path d="M 80 120 C 140 80, 160 220, 110 320 C 70 280, 60 200, 80 120 Z" fill="#FFCCBC" stroke="#FF8A65" stroke-width="4"/>
+                <path d="M 120 210 L 230 210" stroke="#D7CCC8" stroke-width="16" stroke-linecap="round"/>
+                <ellipse cx="230" cy="210" rx="4" ry="18" fill="#B0BEC5"/>
+                <path d="M 310 170 Q 320 120, 360 140 Q 330 170, 310 170 Z" fill="none" stroke="#90CAF9" stroke-width="8"/>
+                <path d="M 330 220 C 360 220, 370 250, 350 265 C 330 270, 320 250, 335 240 C 345 235, 350 245, 340 248" fill="none" stroke="#E91E63" stroke-width="10" stroke-linecap="round"/>
+                <text x="300" y="440" font-size="16" font-weight="bold" fill="#880E4F" text-anchor="middle">الأذن البشرية: من طبلة الأذن إلى القوقعة العصبية</text>
+              `
+            },
+            {
               id: 8,
-              title: "أين الخطأ الشاذ في هذه الساعة الحائطية؟",
-              category: "قوة ملاحظة",
+              title: "حدد الرأس الذي يشكل زاوية قائمة عمودية (90°)",
+              category: "📐 هندسة ورياضيات",
+              clue: "ابحث عن التعامد المثالي المتطابق مع مربع الزاوية القائمة.",
+              target: { x: 420, y: 220, r: 35 },
+              triviaTitle: "سر حبل الفراعنة ونظرية فيثاغورس",
+              triviaFact: "استخدم البناؤون في مصر القديمة حبلاً به 12 عقدة تفصلها مسافات متساوية لصنع مثلث أطواله (3، 4، 5)؛ للحصول على زاوية قائمة مثالية لضبط قواعد المعابد، وهو المبدأ الذي صاغه فيثاغورس لاحقاً بنظريته الشهيرة (a² + b² = c²).",
+              svg: `
+                <rect width="600" height="500" fill="#F3E5F5"/>
+                <g transform="translate(80, 140)">
+                  <line x1="0" y1="80" x2="100" y2="80" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="0" y1="80" x2="70" y2="10" stroke="#7B1FA2" stroke-width="6" stroke-linecap="round"/>
+                  <text x="50" y="115" font-size="15" font-weight="bold" fill="#4A148C">أ (45°)</text>
+                </g>
+                <g transform="translate(240, 140)">
+                  <line x1="60" y1="80" x2="150" y2="80" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="60" y1="80" x2="10" y2="15" stroke="#00796B" stroke-width="6" stroke-linecap="round"/>
+                  <text x="75" y="115" font-size="15" font-weight="bold" fill="#004D40">ب (120°)</text>
+                </g>
+                <g transform="translate(370, 140)">
+                  <line x1="50" y1="80" x2="140" y2="80" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="50" y1="80" x2="50" y2="0" stroke="#E65100" stroke-width="6" stroke-linecap="round"/>
+                  <text x="65" y="115" font-size="15" font-weight="bold" fill="#BF360C">ج (90°)</text>
+                </g>
+                <text x="300" y="380" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">أي رأس من هذه الزوايا يشكل تعامداً مثالياً؟</text>
+              `
+            },
+            {
+              id: 9,
+              title: "أين الرقم الخاطئ الشاذ في هذه الساعة الحائطية؟",
+              category: "👁️ قوة ملاحظة وتدقيق",
+              clue: "دقق في تسلسل الأرقام حول المحيط، هناك رقم لا وجود له في الساعات العادية!",
               target: { x: 395, y: 315, r: 32 },
+              triviaTitle: "العمى الانتباهي وخداع الدماغ",
+              triviaFact: "يعتمد هذا اللغز على ظاهرة 'العمى الانتباهي' (Inattentional Blindness)؛ حيث يميل عقل الإنسان إلى ملء الفراغات وتوقع النمط المألوف تلقائياً دون تدقيق، مما يجعلنا نتجاوز الأخطاء الفاضحة ما لم نقم بتركيز الوعي بشكل مقصود.",
               svg: `
                 <rect width="600" height="500" fill="#E8EAF6"/>
                 <circle cx="300" cy="250" r="160" fill="#FFFFFF" stroke="#3F51B5" stroke-width="12"/>
@@ -1387,23 +1641,13 @@ jobs:
               `
             },
             {
-              id: 9,
-              title: "حدد مركز النجمة الخماسية في علم المملكة المغربية",
-              category: "ثقافة وأعلام",
-              target: { x: 300, y: 250, r: 35 },
-              svg: `
-                <rect width="600" height="500" fill="#ECEFF1"/>
-                <rect x="75" y="100" width="450" height="300" rx="16" fill="#C62828" stroke="#8E0000" stroke-width="6"/>
-                <polygon points="300,175 322,230 380,230 334,265 352,320 300,285 248,320 266,265 220,230 278,230" fill="none" stroke="#2E7D32" stroke-width="10" stroke-linejoin="round"/>
-                <circle cx="300" cy="250" r="8" fill="#1B5E20" opacity="0.3"/>
-                <text x="300" y="440" font-size="16" font-weight="bold" fill="#37474F" text-anchor="middle">العلم الوطني المغربي الشريف</text>
-              `
-            },
-            {
               id: 10,
-              title: "أين نقطة الارتكاز (نقطة التوازن) الصحيحة لتوازن الجسمين؟",
-              category: "فيزياء وميكانيكا",
+              title: "أين يجب وضع نقطة الارتكاز لموازنة الثقلين (12 كغ و 4 كغ)؟",
+              category: "⚖️ فيزياء وميكانيكا الروافع",
+              clue: "وفق قانون الروافع، يجب أن تكون نقطة الارتكاز أقرب إلى الجسم الأثقل.",
               target: { x: 230, y: 310, r: 35 },
+              triviaTitle: "قانون الروافع وكلمة أرخميدس الشهيرة",
+              triviaFact: "صاغ العالم الإغريقي أرخميدس قانون الروافع (القوة × ذراعها = المقاومة × ذراعها) في القرن الثالث ق.م، وقال مقولته الشهيرة: 'أعطوني نقطة ارتكاز وسأرفع لكم كوكب الأرض!'. هذا القانون هو حجر الزاوية للمقصات والرافعات والموازين الحديثة.",
               svg: `
                 <rect width="600" height="500" fill="#E0F2F1"/>
                 <line x1="100" y1="280" x2="500" y2="280" stroke="#795548" stroke-width="14" stroke-linecap="round"/>
@@ -1421,9 +1665,65 @@ jobs:
             },
             {
               id: 11,
-              title: "أين القفل المفتوح الوحيد بين هذه الأقفال؟",
-              category: "قوة ملاحظة",
+              title: "أين تقع كلمة 'الكعبة' المشرفة؟",
+              category: "💡 تفكير جانبي وخارج الصندوق",
+              clue: "فكر كمعلّم! يمكنك إصابة الكعبة في الرسمة، أو النقر على الكلمة في نص السؤال!",
+              target: { x: 300, y: 280, r: 40 },
+              trickTarget: true,
+              triviaTitle: "التفكير الجانبي وفن ضربة معلّم",
+              triviaFact: "صاغ الطبيب والمفكر إدوارد دي بونو مفهوم 'التفكير الجانبي' (Lateral Thinking) عام 1967، وهو التفكير الذي يحرر العقل من القيود المنطقية المعتادة للوصول إلى حلول مبتكرة وسريعة من زوايا غير متوقعة.",
+              svg: `
+                <rect width="600" height="500" fill="#E0F7FA"/>
+                <ellipse cx="300" cy="340" rx="240" ry="110" fill="#FFFFFF" stroke="#B2EBF2" stroke-width="4"/>
+                <polygon points="230,230 300,190 370,230 300,270" fill="#424242"/>
+                <polygon points="230,230 300,270 300,350 230,310" fill="#212121"/>
+                <polygon points="370,230 300,270 300,350 370,310" fill="#111111"/>
+                <polygon points="230,250 300,290 300,305 230,265" fill="#FFD700"/>
+                <polygon points="370,250 300,290 300,305 370,265" fill="#FFC107"/>
+                <rect x="250" y="275" width="25" height="35" fill="#FFD54F" stroke="#FFA000" stroke-width="2"/>
+                <text x="300" y="460" font-size="16" font-weight="bold" fill="#00838F" text-anchor="middle">فكر بذكاء... الحل قد يكون في أكثر من موضع!</text>
+              `
+            },
+            {
+              id: 12,
+              title: "حدد موقع برج إيفل الشهير على خريطة باريس",
+              category: "🗼 جغرافيا ومعالم عالمية",
+              clue: "المعلم الحديدي الشامخ بالقرب من ضفة نهر السين في ساحة شامب دي مارس.",
+              target: { x: 280, y: 230, r: 35 },
+              triviaTitle: "سيدة الحديد - برج إيفل",
+              triviaFact: "شُيد برج إيفل عام 1889 بمناسبة المعرض العالمي بباريس، ويبلغ ارتفاعه 330 متراً ويزن 10,100 طن. كان مقرراً هدمه بعد 20 عاماً، إلا أن استخدامه كبرج لبث إشارات الراديو والاتصالات العسكرية أنقذه ليصبح رمزاً سياحياً لفرنسا.",
+              svg: `
+                <rect width="600" height="500" fill="#ECEFF1"/>
+                <path d="M 0 180 Q 200 160, 300 240 Q 420 320, 600 280" stroke="#4FC3F7" stroke-width="38" fill="none" stroke-linecap="round"/>
+                <text x="460" y="340" font-size="15" font-weight="bold" fill="#0277BD">نهر السين</text>
+                <rect x="230" y="210" width="100" height="120" rx="10" fill="#C8E6C9" stroke="#81C784" stroke-width="2"/>
+                <polygon points="280,180 265,250 295,250" fill="#795548" stroke="#4E342E" stroke-width="2"/>
+                <rect x="270" y="230" width="20" height="4" fill="#FFE082"/>
+                <circle cx="280" cy="180" r="4" fill="#FFD54F"/>
+                <text x="280" y="270" font-size="13" font-weight="bold" fill="#3E2723" text-anchor="middle">برج إيفل</text>
+              `
+            },
+            {
+              id: 13,
+              title: "اعثر على الوجه الوحيد الذي يبتسم وسط جمع الوجوه العابسة",
+              category: "🙂 دقة ملاحظة وسرعة بديهة",
+              clue: "ابحث في الصف الثالث من الوجوه، هناك وجه يبتسم بهدوء وثقة!",
+              target: { x: 420, y: 320, r: 32 },
+              triviaTitle: "منطقة التعرف على الوجوه في الدماغ",
+              triviaFact: "يمتلك الدماغ البشري منطقة عصبية متخصصة تسمى 'تلفيف الوجه المغزلي' (FFA)، تتيح لنا تمييز الوجوه وتعابير المشاعر الدقيقة (كالفرح، الحزن، والغضب) في أقل من 100 جزء من الثانية لحماية الإنسان وبناء التواصل الاجتماعي.",
+              svg: `
+                <rect width="600" height="500" fill="#ECEFF1"/>
+                <g id="faces-grid"></g>
+              `
+            },
+            {
+              id: 14,
+              title: "أين القفل الوحيد الذي تُرك مفتوحاً بين هذه الأقفال الذهبية؟",
+              category: "🔒 قوة ملاحظة وتفاصيل",
+              clue: "تفحص حلقة القفل (Shackle)، ستجد قفلاً غير محكم الإغلاق.",
               target: { x: 380, y: 260, r: 35 },
+              triviaTitle: "تاريخ الأقفال والمفاتيح عبر العصور",
+              triviaFact: "يعود تاريخ أقدم قفل ومفتاح معروف في العالم إلى مصر القديمة وقصر خورساباد في بلاد الرافدين قبل 4000 عام، وكانت مصنوعة من الخشب وتعتمد على دبابيس تتطابق مع أسنان المفتاح، وهو المبدأ نفسه المستخدم في أحدث الأقفال المعدنية اليوم!",
               svg: `
                 <rect width="600" height="500" fill="#FFF3E0"/>
                 <g id="locks-grid"></g>
@@ -1431,10 +1731,13 @@ jobs:
               `
             },
             {
-              id: 12,
-              title: "حدد مركز عين الهدف الذهبي (ضربة معلّم الختامية)",
-              category: "التحدي الأسطوري",
+              id: 15,
+              title: "صوّب على نقطة الصفر الدقيقة في مركز الهدف (ضربة معلّم الختامية)",
+              category: "🎯 التحدي الأسطوري الكبير",
+              clue: "إصابة عين الهدف الدقيقة تتطلب ثبات اليد والتركيز بنسبة 100%!",
               target: { x: 300, y: 240, r: 25 },
+              triviaTitle: "أصل تسمية ضربة معلّم",
+              triviaFact: "يرجع أصل مصطلح 'ضربة معلّم' إلى ورش الحرفيين والصناع التقليديين العرب؛ حيث كان شيخ الصنعة أو 'المعلّم' يتدخل في اللحظة الحرجة ليقوم باللمسة الحاسمة التي تتطلب خبرة السنين وتحوّل القطعة الخام إلى تحفة فنية لا تقدر بثمن.",
               svg: `
                 <rect width="600" height="500" fill="#212121"/>
                 <circle cx="300" cy="240" r="180" fill="#37474F" stroke="#FFE082" stroke-width="8"/>
@@ -1453,6 +1756,7 @@ jobs:
             currentStageIdx: 0,
             coins: 250,
             stageProgress: {},
+            selectedPreviewIdx: 0,
             vibrationEnabled: true,
 
             init() {
@@ -1460,6 +1764,7 @@ jobs:
               Confetti.init();
               this.updateCoinsUI();
               this.bindArenaTouch();
+              this.generateMapVisuals();
             },
 
             loadState() {
@@ -1507,20 +1812,136 @@ jobs:
 
             startGameFromSplash() {
               AudioEngine.playWoodClick();
-              this.showScreen('menu-screen');
+              this.goToMenu();
             },
 
             goToMenu() {
               AudioEngine.playWoodClick();
               this.updateCoinsUI();
-              const btn = document.getElementById('main-play-btn');
-              if (btn) btn.innerHTML = `الـعـب (مرحلة ${this.currentStageIdx + 1}) 🎯`;
+              const quickNum = document.getElementById('quick-stage-num');
+              if (quickNum) quickNum.innerText = Math.min(this.currentStageIdx + 1, STAGES.length);
               this.showScreen('menu-screen');
             },
 
-            playCurrentStage() {
+            openMapScreen() {
+              AudioEngine.playWoodClick();
+              this.renderMapNodes();
+              this.updateCoinsUI();
+              const btnNum = document.getElementById('map-btn-stage-num');
+              if (btnNum) btnNum.innerText = Math.min(this.currentStageIdx + 1, STAGES.length);
+              this.showScreen('map-screen');
+
+              setTimeout(() => {
+                const activeNode = document.querySelector('.map-node.current');
+                if (activeNode) {
+                  activeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }, 200);
+            },
+
+            playCurrentStageDirectly() {
               AudioEngine.playWoodClick();
               this.loadStage(this.currentStageIdx);
+              this.showScreen('game-screen');
+            },
+
+            generateMapVisuals() {
+              this.renderMapNodes();
+            },
+
+            renderMapNodes() {
+              const container = document.getElementById('map-nodes-container');
+              const svg = document.getElementById('map-road-svg');
+              if (!container || !svg) return;
+
+              container.innerHTML = '';
+              const total = STAGES.length;
+              let completedCount = 0;
+
+              const nodes = [];
+              const startY = 100;
+              const stepY = 120;
+
+              for (let i = 0; i < total; i++) {
+                const xPct = 50 + 28 * Math.sin(i * 1.1);
+                const yPx = startY + i * stepY;
+                nodes.push({ id: i + 1, x: xPct, y: yPx });
+                if (this.stageProgress[i + 1]) completedCount++;
+              }
+
+              const progCounter = document.getElementById('map-progress-counter');
+              if (progCounter) progCounter.innerText = `المراحل المنجزة: ${completedCount} / ${total}`;
+
+              let pathD = `M ${nodes[0].x * 4.8} ${nodes[0].y}`;
+              for (let i = 0; i < nodes.length - 1; i++) {
+                const p1 = nodes[i];
+                const p2 = nodes[i + 1];
+                const midY = (p1.y + p2.y) / 2;
+                pathD += ` C ${p1.x * 4.8} ${midY}, ${p2.x * 4.8} ${midY}, ${p2.x * 4.8} ${p2.y}`;
+              }
+
+              svg.setAttribute('viewBox', `0 0 480 ${startY + total * stepY + 60}`);
+              svg.innerHTML = `
+                <path d="${pathD}" fill="none" stroke="#FFA000" stroke-width="26" stroke-linecap="round"/>
+                <path d="${pathD}" fill="none" stroke="#FFF9C4" stroke-width="18" stroke-linecap="round"/>
+                <path d="${pathD}" fill="none" stroke="#FF8F00" stroke-width="3" stroke-dasharray="6 6"/>
+              `;
+
+              nodes.forEach((n, idx) => {
+                const prog = this.stageProgress[n.id];
+                const isCompleted = !!prog;
+                const isCurrent = (idx === this.currentStageIdx);
+                const isLocked = (!isCompleted && idx > this.currentStageIdx);
+
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = `map-node ${isCompleted ? 'completed' : isCurrent ? 'current' : 'locked'}`;
+                nodeDiv.style.left = `${n.x}%`;
+                nodeDiv.style.top = `${n.y}px`;
+
+                let starsHtml = isCompleted ? '⭐'.repeat(prog.stars) : '';
+                let tagHtml = isCurrent ? `<div class="map-current-pin">أنت هنا 🎯</div>` : '';
+                let contentHtml = isLocked ? '🔒' : n.id;
+
+                nodeDiv.innerHTML = `${tagHtml}<span>${contentHtml}</span><div class="map-node-stars">${starsHtml}</div>`;
+
+                nodeDiv.onclick = () => {
+                  if (isLocked) {
+                    AudioEngine.playError();
+                    Game.showToast("⚠️ أكمل المرحلة السابقة أولاً لفتح هذه المرحلة!", "#C62828");
+                    nodeDiv.classList.add('shake');
+                    setTimeout(() => nodeDiv.classList.remove('shake'), 400);
+                  } else {
+                    Game.openLevelPreview(idx);
+                  }
+                };
+
+                container.appendChild(nodeDiv);
+              });
+            },
+
+            openLevelPreview(idx) {
+              AudioEngine.playWoodClick();
+              this.selectedPreviewIdx = idx;
+              const stage = STAGES[idx];
+              const prog = this.stageProgress[stage.id];
+
+              document.getElementById('preview-category').innerText = stage.category;
+              document.getElementById('preview-title').innerText = `المرحلة ${stage.id}: ${stage.title}`;
+              document.getElementById('preview-clue').innerText = `💡 إشارة: ${stage.clue}`;
+
+              const starsBox = document.getElementById('preview-stars');
+              if (prog) {
+                starsBox.innerHTML = '⭐'.repeat(prog.stars) + ' <span style="font-weight:800; color:#2E7D32;">(مكتملة)</span>';
+              } else {
+                starsBox.innerHTML = '<span style="font-weight:800; color:#E65100;">🎯 غير مكتملة بعد</span>';
+              }
+
+              this.openModal('level-preview-modal');
+            },
+
+            startSelectedStage() {
+              this.closeModal('level-preview-modal');
+              this.loadStage(this.selectedPreviewIdx);
               this.showScreen('game-screen');
             },
 
@@ -1535,9 +1956,10 @@ jobs:
 
               document.getElementById('game-stage-title').innerText = `مرحلة ${stage.id}`;
               document.getElementById('game-category-tag').innerText = stage.category;
+              document.getElementById('game-question-clue').innerText = `💡 ${stage.clue}`;
 
               const qEl = document.getElementById('game-question-text');
-              if (stage.id === 5) {
+              if (stage.id === 11) {
                 qEl.innerHTML = `أين تقع <span id="trick-word" class="trick-clickable" onclick="Game.onTrickClick(event)">'الكعبة المشرفة'</span>؟`;
               } else {
                 qEl.innerText = stage.title;
@@ -1546,8 +1968,8 @@ jobs:
               const svgEl = document.getElementById('stage-svg');
               svgEl.innerHTML = stage.svg;
 
-              if (stage.id === 4) this.renderFacesGrid();
-              if (stage.id === 11) this.renderLocksGrid();
+              if (stage.id === 13) this.renderFacesGrid();
+              if (stage.id === 14) this.renderLocksGrid();
 
               const pin = document.getElementById('target-pin');
               pin.classList.remove('dropped');
@@ -1664,20 +2086,20 @@ jobs:
                 this.vibrate([80, 50, 120]);
                 Confetti.burst(scrX, scrY);
                 this.showToast("🎯 ضربة معلّم! 100%", "#2E7D32");
-                setTimeout(() => this.showEvaluationModal(100, "🎯 ضربة معلّم! إصابة في الصميم!", 3), 700);
+                setTimeout(() => this.showEvaluationModal(100, "🎯 ضربة معلّم! إصابة في الصميم!", 3), 600);
               }
               else if (dist <= target.r * 1.0) {
                 AudioEngine.playBullseyeFanfare();
                 this.vibrate(60);
                 Confetti.burst(scrX, scrY);
                 this.showToast("⭐ ممتاز! قريب جداً من المركز", "#1565C0");
-                setTimeout(() => this.showEvaluationModal(80, "⭐ ممتاز جداً! أداء رائع!", 2), 700);
+                setTimeout(() => this.showEvaluationModal(80, "⭐ ممتاز جداً! أداء رائع!", 2), 600);
               }
               else if (dist <= target.r * 1.5) {
                 AudioEngine.playCoinSound();
                 this.vibrate(40);
                 this.showToast("👍 جيد! إصابة مقبولة", "#F57F17");
-                setTimeout(() => this.showEvaluationModal(50, "👍 جيد! نجحت في اجتياز المرحلة", 1), 700);
+                setTimeout(() => this.showEvaluationModal(50, "👍 جيد! نجحت في اجتياز المرحلة", 1), 600);
               }
               else {
                 AudioEngine.playError();
@@ -1714,6 +2136,9 @@ jobs:
 
               document.getElementById('victory-eval').innerText = title;
               document.getElementById('victory-reward-text').innerText = `كسبت +${earnedCoins} 💰`;
+
+              document.getElementById('trivia-card-title').innerText = stage.triviaTitle;
+              document.getElementById('trivia-card-text').innerText = stage.triviaFact;
 
               for (let s = 1; s <= 3; s++) {
                 const el = document.getElementById(`star-${s}`);
@@ -1768,7 +2193,7 @@ jobs:
             askFriend() {
               AudioEngine.playWoodClick();
               const stage = STAGES[this.currentStageIdx];
-              const challengeText = `🎯 ساعدني في حل هذا اللغز في لعبة "ضربة معلم"!\nالمرحلة ${stage.id}: ${stage.title}\nهل يمكنك إصابة الهدف؟`;
+              const challengeText = `🎯 ساعدني في حل هذا اللغز في لعبة "ضربة معلم"!\nالمرحلة ${stage.id}: ${stage.title}\n${stage.clue}\nهل يمكنك إصابة الهدف؟`;
 
               if (navigator.share) {
                 navigator.share({
@@ -1777,7 +2202,7 @@ jobs:
                 }).catch(() => {});
               } else {
                 navigator.clipboard?.writeText(challengeText);
-                this.showToast("📋 تم نسخ نص السؤال لمشاركته مع أصدقائك!", "#0277BD");
+                this.showToast("📋 تم نسخ نص اللغز لمشاركته مع أصدقائك!", "#0277BD");
               }
             },
 
@@ -1825,47 +2250,17 @@ jobs:
               if (navigator.share) {
                 navigator.share({
                   title: 'ضربة معلم',
-                  text: 'العب لعبة الألغاز العربية المميزة "ضربة معلم"!'
+                  text: 'العب لعبة الألغاز والمعلومات العربية المميزة "ضربة معلم"!'
                 }).catch(() => {});
               }
             },
 
             updateCoinsUI() {
-              const el1 = document.getElementById('menu-coins-val');
-              const el2 = document.getElementById('game-coins-val');
-              if (el1) el1.innerText = this.coins;
-              if (el2) el2.innerText = this.coins;
-            },
-
-            openMapModal() {
-              AudioEngine.playWoodClick();
-              const grid = document.getElementById('stages-grid-container');
-              grid.innerHTML = '';
-
-              STAGES.forEach((stg, i) => {
-                const prog = this.stageProgress[stg.id];
-                const isCompleted = !!prog;
-                const isCurrent = (i === this.currentStageIdx);
-                const isLocked = (!isCompleted && i > this.currentStageIdx);
-
-                const div = document.createElement('div');
-                div.className = `stage-node-btn ${isCompleted ? 'completed' : isCurrent ? 'current' : 'locked'}`;
-                
-                let starsText = isCompleted ? '⭐'.repeat(prog.stars) : isLocked ? '🔒' : '🎯';
-                div.innerHTML = `<span>${stg.id}</span><span class="stage-node-stars">${starsText}</span>`;
-
-                if (!isLocked) {
-                  div.onclick = () => {
-                    AudioEngine.playWoodClick();
-                    Game.closeModal('map-modal');
-                    Game.loadStage(i);
-                    Game.showScreen('game-screen');
-                  };
-                }
-                grid.appendChild(div);
+              const ids = ['menu-coins-val', 'map-coins-val', 'game-coins-val'];
+              ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = this.coins;
               });
-
-              this.openModal('map-modal');
             },
 
             openSettingsModal() {
@@ -1909,6 +2304,36 @@ jobs:
                 location.reload();
               }
             }
+          };
+
+          window.handleAndroidBack = function() {
+            const activeModal = document.querySelector('.modal-overlay.active');
+            if (activeModal) {
+              Game.closeModal(activeModal.id);
+              return "handled";
+            }
+
+            if (document.getElementById('game-screen').classList.contains('active')) {
+              Game.openMapScreen();
+              return "handled";
+            }
+
+            if (document.getElementById('map-screen').classList.contains('active')) {
+              Game.goToMenu();
+              return "handled";
+            }
+
+            if (document.getElementById('splash-screen').classList.contains('active')) {
+              Game.goToMenu();
+              return "handled";
+            }
+
+            if (document.getElementById('menu-screen').classList.contains('active')) {
+              return "exit";
+            }
+
+            Game.goToMenu();
+            return "handled";
           };
 
           window.addEventListener('DOMContentLoaded', () => {
